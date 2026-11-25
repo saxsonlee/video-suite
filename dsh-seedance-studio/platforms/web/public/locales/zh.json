@@ -126,12 +126,16 @@
   "settings.relayNone": "未选择模型（主面板显示全部内置模型）",
   "settings.hint": "设置写入 settings.json（与 DSH 插件共享），Key 打码显示、不会明文回填。",
   "settings.unset": "未配置",
-  "duration.auto": "自动（-1）",
+  "duration.auto": "自动",
   "duration.seconds": "{value} 秒",
   "duration.fallback": "{value} 秒",
   "lang.name": "中文",
   "mode.edit": "视频编辑",
   "mode.extend": "视频延长",
   "mode.draft": "样片（低成本）",
-  "mode.draft-final": "样片转正式"
+  "mode.draft-final": "样片转正式",
+  "duration.custom": "自定义",
+  "duration.autoShort": "自动",
+  "form.durationInvalid": "时长填写不正确，请填整数秒",
+  "duration.placeholder": "输入秒数"
 }

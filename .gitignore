@@ -59,6 +59,10 @@ seedance-output/
 **/*.test.mjs
 **/*.test.js
 
+# ---- 打包/验证产生的临时目录 ----
+_seedance-studio/
+**/pack-verification-*/
+
 # ---- 本地笔记（不提交）----
 SUBMIT.md
 *.local.md

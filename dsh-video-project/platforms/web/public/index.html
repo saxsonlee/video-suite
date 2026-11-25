@@ -244,8 +244,11 @@ async function loadEnv() {
     const value = await api('GET', API + '/env');
     state.env = value;
     state.envError = '';
+    state.envFailed = false;
   } catch (error) {
     state.envError = error && error.message ? error.message : String(error);
+    // 失败后不再自动重试（否则会一直循环请求）；用户点「重新检查」再试
+    state.envFailed = true;
   }
   if (state.view === 'settings') render();
 }
@@ -570,7 +573,9 @@ function renderSettings() {
           '<div class="detail-kv"><span class="k">项目存储</span><span>' + esc(envChecks.storage.path || '—') + ' ' + dot(envChecks.storage.ok) + '</span></div>' +
           '<div class="detail-kv"><span class="k">插件目录</span><span>' + (envChecks.pluginDir.writable ? '可写' : '不可写') + ' ' + dot(envChecks.pluginDir.ok) + '</span></div>' +
         '</div>'
-      : '<div class="hint">检查中…</div>') +
+      : (state.envError
+          ? '<div class="hint">接口不可用：本次更新新增了 /env 路由，需要重启一次 DSH 才生效。</div>'
+          : '<div class="hint">检查中…</div>')) +
     (envChecks && envChecks.ffmpeg.ok && envChecks.ffmpeg.version ? '<div class="hint">' + esc(envChecks.ffmpeg.version) + '（来源：' + esc(envChecks.ffmpeg.source) + '）</div>' : '') +
     (envChecks && !envChecks.ffmpeg.ok ? '<div class="hint">缺少 ffmpeg 时：抽帧分析、视频时长/尺寸探测不可用（生成与验收表仍可正常用）。点下面按钮下载到插件目录，约 22~110MB。</div>' : '') +
     (env && env.fetch && env.fetch.running ? '<div class="hint">正在下载 ffmpeg…（完成后自动刷新）</div>' : '') +
@@ -1234,7 +1239,7 @@ function render() {
   setNav();
   const app = $('app');
   if (!app) return;
-  if (state.view === 'settings') { app.innerHTML = renderSettings(); if (!state.env && !state.envLoading) { state.envLoading = true; loadEnv().finally(() => { state.envLoading = false }); } return; }
+  if (state.view === 'settings') { app.innerHTML = renderSettings(); if (!state.env && !state.envLoading && !state.envFailed) { state.envLoading = true; loadEnv().finally(() => { state.envLoading = false }); } return; }
   if (state.detail) { app.innerHTML = renderDetail(); return; }
   app.innerHTML = renderProjects();
 }
@@ -1302,7 +1307,7 @@ document.addEventListener('click', (event) => {
   if (mediaThumb) { openMediaPreview(mediaThumb.getAttribute('data-media-preview')); return; }
   if (target.closest('[data-media-close]')) { closeMediaPreview(); return; }
   if (target.closest('#btnNewProject')) { newProject(); return; }
-  if (target.closest('#btnEnvRefresh')) { state.envError = ''; state.env = null; render(); loadEnv(); return; }
+  if (target.closest('#btnEnvRefresh')) { state.envError = ''; state.envFailed = false; state.env = null; state.envLoading = true; render(); loadEnv().finally(() => { state.envLoading = false }); return; }
   if (target.closest('#btnEnvFetchFfmpeg')) { envFetchFfmpeg(target.closest('#btnEnvFetchFfmpeg')); return; }
   if (target.closest('#btnRefresh')) { if (state.view === 'settings') loadSettings(); else loadProjects(); return; }
   const delBtn = target.closest('[data-delete-project]');

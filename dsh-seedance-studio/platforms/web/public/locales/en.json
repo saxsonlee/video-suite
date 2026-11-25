@@ -126,12 +126,16 @@
   "settings.relayNone": "No models selected (main panel shows all built-in models)",
   "settings.hint": "Settings are written to settings.json (shared with the DSH plugin); keys are masked and never echoed in plain text.",
   "settings.unset": "Not configured",
-  "duration.auto": "Auto (-1)",
+  "duration.auto": "Auto",
   "duration.seconds": "{value}s",
   "duration.fallback": "{value}s",
   "lang.name": "English",
   "mode.edit": "Video editing",
   "mode.extend": "Video extension",
   "mode.draft": "Draft (low cost)",
-  "mode.draft-final": "Draft to final"
+  "mode.draft-final": "Draft to final",
+  "duration.custom": "Custom",
+  "duration.autoShort": "Auto",
+  "form.durationInvalid": "Invalid duration — enter whole seconds",
+  "duration.placeholder": "Seconds"
 }

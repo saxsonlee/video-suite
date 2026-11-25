@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { Client, StdioClientTransport } from './dependencies.mjs';
@@ -7,9 +8,11 @@ import { ROOT, readJson, sleep } from '../../platforms/codex-plugin/server/util.
 import { inlineSharedSpa } from './build-panel.mjs';
 
 export async function verifyCodex(destination) {
-  const scratch = path.resolve(ROOT, '../_seedance-studio/codex-layout-2026-11-06');
-  fs.mkdirSync(scratch, { recursive: true });
-  const dataDir = fs.mkdtempSync(path.join(scratch, 'pack-verification-'));
+  // 验证用的模拟数据目录放系统临时目录，验证结束后清理：
+  // 之前放在仓库内（ROOT/../_seedance-studio）会留下 pack-verification-* 垃圾目录。
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'seedance-pack-verify-'));
+  const dataDir = path.join(scratch, 'data');
+  fs.mkdirSync(dataDir, { recursive: true });
   const client = new Client({ name: 'seedance-codex-pack', version: '1' });
   const transport = new StdioClientTransport({ command: process.execPath, args: [path.join(destination, 'platforms/codex-plugin/server/mcp.mjs')], cwd: destination,
     env: { ...process.env, CODEX_VIDEO_STUDIO_HOME: dataDir, VIDEO_STUDIO_API_KEY: '', VIDEO_STUDIO_IMAGE_API_KEY: '', ARK_API_KEY: '', RELAY_API_KEY: '' }, stderr: 'pipe' });
@@ -54,8 +57,10 @@ export async function verifyCodex(destination) {
     throw error;
   } finally {
     await client.close();
-    const state = readJson(path.join(dataDir, 'runtime.json'));
+    let state = null;
+    try { state = readJson(path.join(dataDir, 'runtime.json')); } catch { state = null; }
     if (state?.pid) { try { process.kill(state.pid); } catch {} }
     await sleep(200);
+    try { fs.rmSync(scratch, { recursive: true, force: true }); } catch { /* 清理失败不影响打包 */ }
   }
 }

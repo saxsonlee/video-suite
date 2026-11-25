@@ -126,12 +126,16 @@
   "settings.relayNone": "Модели не выбраны (показываются все встроенные)",
   "settings.hint": "Настройки записываются в settings.json (общие с плагином DSH); ключи маскируются и не отображаются открыто.",
   "settings.unset": "Не настроено",
-  "duration.auto": "Авто (-1)",
+  "duration.auto": "Авто",
   "duration.seconds": "{value} с",
   "duration.fallback": "{value} с",
   "lang.name": "Русский",
   "mode.edit": "Видеомонтаж",
   "mode.extend": "Продление видео",
   "mode.draft": "Черновик (дёшево)",
-  "mode.draft-final": "Черновик → финал"
+  "mode.draft-final": "Черновик → финал",
+  "duration.custom": "Другое",
+  "duration.autoShort": "Авто",
+  "form.durationInvalid": "Неверная длительность — введите целые секунды",
+  "duration.placeholder": "Секунды"
 }

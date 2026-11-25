@@ -63,6 +63,11 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); box-sha
 textarea { resize: vertical; min-height: 84px; line-height: 1.5; }
 select { cursor: pointer; appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 16px) 55%, calc(100% - 11px) 55%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 28px; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; }
+.duration-group { display: flex; flex-direction: column; gap: 6px; }
+.duration-group select { width: 100%; }
+.duration-group input { width: 100%; }
+.duration-group input::-webkit-outer-spin-button,
+.duration-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .row > .field { flex: 1 1 0; min-width: 96px; }
 .hint { font-size: 11.5px; color: var(--muted2); }
 h2 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 0; letter-spacing: .02em; }
@@ -223,7 +228,12 @@ html[data-theme="light"] .toast { background: #fff; }
     <div class="row">
       <div class="field"><label data-i18n="form.resolution"></label><select id="resolution"></select></div>
       <div class="field"><label data-i18n="form.ratio"></label><select id="ratio"></select></div>
-      <div class="field"><label data-i18n="form.duration"></label><select id="duration"></select></div>
+      <div class="field"><label data-i18n="form.duration"></label>
+        <div class="duration-group">
+          <select id="durationPreset"></select>
+          <input id="duration" type="number" step="1" inputmode="numeric" placeholder="输入秒数" hidden>
+        </div>
+      </div>
     </div>
     <div class="field" style="margin-top:12px">
       <div class="checkline">
@@ -358,10 +368,47 @@ function renderModeBadge() {
   }
 }
 
+/** 模型名规范化：小写、非字母数字统一为 -、去掉末尾 6 位版本日期（与后端规则一致）。 */
+function normalizeModelKey(value) {
+  const text = String(value === undefined || value === null ? '' : value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return text.replace(/-\d{6}$/, '');
+}
+
+/**
+ * 当前选中的模型定义。
+ * 中转站里的模型 id 常常是别名（doubao-seedance-2.5），而目录里是方舟粒度 id
+ * （doubao-seedance-2-5-260628）；这里按规范化名兜底匹配，再不行用全局默认参数兜底，
+ * Guarantees resolution / ratio / duration always have selectable options (no empty dropdown).
+ */
 function currentModel() {
   if (!state.config) return null;
-  const id = $('model').value;
-  return (state.config.models || []).find((model) => model.id === id) || null;
+  const select = $('model');
+  const id = select ? select.value : '';
+  const all = Array.isArray(state.config.models) ? state.config.models : [];
+  const found = all.find((model) => model.id === id);
+  if (found) return found;
+  const stem = normalizeModelKey(id);
+  if (stem) {
+    const byStem = all.find((model) => normalizeModelKey(model.id) === stem);
+    if (byStem) return byStem;
+  }
+  const defaults = state.config.defaults || {};
+  return {
+    id: id || defaults.defaultModel || '',
+    label: id || defaults.defaultModel || '',
+    resolutions: Array.isArray(defaults.resolutions) && defaults.resolutions.length ? defaults.resolutions : ['480p', '720p', '1080p'],
+    ratios: Array.isArray(defaults.ratios) && defaults.ratios.length ? defaults.ratios : ['adaptive', '16:9', '9:16', '1:1'],
+    durations: [4, 15],
+    autoDuration: true,
+    defaultDuration: defaults.defaultDuration,
+    defaultResolution: defaults.defaultResolution,
+    defaultRatio: defaults.defaultRatio,
+    audio: defaults.defaultGenerateAudio !== false,
+    seed: true,
+    returnLastFrame: true,
+    watermark: true,
+    modes: []
+  };
 }
 
 function option(value, label) {
@@ -375,6 +422,9 @@ function renderModelOptions() {
   let list = enabled.length
     ? enabled.map((entry) => all.find((model) => model.id === entry.id) || { id: entry.id, label: entry.label || entry.id })
     : all;
+  // 过滤掉图像生成模型（它们只用于出图，不能用来生成视频；与后端 IMAGE_MODEL_PATTERN 保持一致）
+  const IMAGE_MODEL_RE = /(^|[-_/])(gpt-image|gemini[-a-z0-9.]*image|gemini-nano-banana|nano-banana|seedream|flux|dall-e|imagen|qwen-image|kolors|minimax[-a-z0-9.]*image)/i;
+  list = list.filter((model) => !IMAGE_MODEL_RE.test(String(model.id || '')));
   // 默认模型必须出现在下拉里：它可能不在「已选模型清单」中（例如内置的 MiniMax-H3）
   const defaultId = (state.config.defaults && state.config.defaults.defaultModel) || '';
   if (defaultId && !list.some((model) => model.id === defaultId)) {
@@ -385,29 +435,70 @@ function renderModelOptions() {
   if (defaults.defaultModel && list.some((model) => model.id === defaults.defaultModel)) $('model').value = defaults.defaultModel;
 }
 
+/**
+ * 设置时长（下拉与手填输入框联动）。
+ * - 传 -1 → 输入框清空、下拉选「自动」
+ * - 传数字 → 下拉有对应项就选中，否则显示「自定义」
+ * - 传 '' → 两者都清空（等同自动）
+ */
+function setDurationValue(value) {
+  const input = $('duration');
+  const preset = $('durationPreset');
+  const raw = value === undefined || value === null || value === '' ? '' : String(value).trim();
+  const isAuto = raw === '-1' || raw === '';
+  const presetCodes = preset ? [...preset.options].map((o) => o.value) : [];
+  if (isAuto) {
+    if (preset) preset.value = presetCodes.indexOf('-1') !== -1 ? '-1' : '';
+    if (input) { input.value = ''; input.hidden = true; }
+    return;
+  }
+  if (preset && presetCodes.indexOf(raw) !== -1) {
+    preset.value = raw;
+    if (input) { input.value = raw; input.hidden = true; }
+    return;
+  }
+  // 不在常用值里 → 进入「自定义」模式，显示输入框
+  if (preset) preset.value = '';
+  if (input) { input.value = raw; input.hidden = false; }
+}
+
 function renderParamOptions() {
   const model = currentModel();
-  if (!model) return;
+  if (!model) return;  // state.config 未加载时才可能为空；加载后 currentModel 一定有兜底对象
   const defaults = state.config.defaults || {};
   const resolutions = Array.isArray(model.resolutions) ? model.resolutions : ['720p'];
   $('resolution').innerHTML = resolutions.map((value) => option(value, value)).join('');
   const ratios = Array.isArray(model.ratios) ? model.ratios : ['adaptive'];
   $('ratio').innerHTML = ratios.map((value) => option(value, value)).join('');
-  const durations = [];
-  if (model.autoDuration) durations.push(-1);
+  // Duration: preset dropdown (auto + common values) with an optional manual input, clamped to the model range.
   const range = Array.isArray(model.durations) ? model.durations : [];
-  if (range.length === 2) {
-    const [min, max] = range;
-    for (let d = min; d <= max; d += (max - min > 12 ? 1 : 1)) durations.push(d);
+  const minDuration = range.length === 2 ? range[0] : 1;
+  const maxDuration = range.length === 2 ? range[1] : 60;
+  const presets = [];
+  for (const candidate of [4, 5, 6, 8, 10, 12, 15, 20, 30]) {
+    if (candidate >= minDuration && candidate <= maxDuration) presets.push(candidate);
   }
-  $('duration').innerHTML = durations.length
-    ? durations.map((value) => option(value, value === -1 ? T('duration.auto') : T('duration.seconds', { value }))).join('')
-    : option(5, T('duration.fallback', { value: 5 }));
+  if (!presets.length) presets.push(minDuration);
+  const presetValues = (model.autoDuration ? [-1] : []).concat(presets);
+  const presetEl = $('durationPreset');
+  if (presetEl) {
+    presetEl.innerHTML = presetValues
+      .map((value) => option(value, value === -1 ? T('duration.auto') : T('duration.seconds', { value })))
+      .join('') + '<option value="">' + esc(T('duration.custom')) + '</option>';
+  }
+  const durationInput = $('duration');
+  if (durationInput) {
+    durationInput.min = String(minDuration);
+    durationInput.max = String(maxDuration);
+    durationInput.placeholder = T('duration.placeholder');
+  }
   const defaultValue = defaults.params || {};
   $('resolution').value = defaultValue.resolution || (resolutions.indexOf('720p') >= 0 ? '720p' : resolutions[0] || '720p');
   $('ratio').value = defaultValue.ratio || (ratios.indexOf('adaptive') >= 0 ? 'adaptive' : ratios[0] || 'adaptive');
-  const durationDefault = typeof defaultValue.duration === 'number' ? defaultValue.duration : (durations.length ? durations[0] : 5);
-  $('duration').value = String(durationDefault === -1 ? -1 : durationDefault);
+  const durationDefault = typeof defaultValue.duration === 'number'
+    ? defaultValue.duration
+    : (model.autoDuration ? -1 : presets[0]);
+  setDurationValue(durationDefault);
   $('generateAudio').checked = model.audio === true;
   $('returnLastFrame').checked = true;
   $('watermark').checked = false;
@@ -622,7 +713,16 @@ function buildGenerateBody() {
   const params = {
     resolution: mode === 'draft' ? '480p' : $('resolution').value,
     ratio: $('ratio').value,
-    duration: Number($('duration').value),
+    duration: (() => {
+      const presetEl = $('durationPreset');
+      const presetValue = presetEl ? String(presetEl.value || '').trim() : '';
+      const customValue = String(($('duration') || {}).value || '').trim();
+      const raw = presetValue === '' ? customValue : presetValue;
+      if (raw === '' || raw === '-1') return -1;
+      const value = Number(raw);
+      if (!Number.isFinite(value)) throw new Error(T('form.durationInvalid'));
+      return value;
+    })(),
     generateAudio: $('generateAudio').checked,
     watermark: $('watermark').checked,
     returnLastFrame: $('returnLastFrame').checked
@@ -1137,6 +1237,16 @@ document.addEventListener('click', (event) => {
   if (!event.target.closest('.lang-wrap')) menu.hidden = true;
 });
 $('btnCancelRecreate').addEventListener('click', () => { state.recreateSourceId = null; updateRecreateHint(); });
+$('durationPreset').addEventListener('change', () => {
+  const value = $('durationPreset').value;
+  const input = $('duration');
+  if (value === '') {
+    // 切到「自定义」：显示输入框并聚焦
+    if (input) { input.hidden = false; input.value = ''; input.focus(); }
+    return;
+  }
+  if (input) { input.hidden = true; input.value = value === '-1' ? '' : value; }
+});
 $('model').addEventListener('change', () => { renderModeOptions(); renderParamOptions(); });
 $('mode').addEventListener('change', updateModeFields);
 $('prompt').addEventListener('input', () => { $('promptCount').textContent = String($('prompt').value.length) + ' / 20000'; });
