@@ -2,6 +2,12 @@
 
 本文件记录每个版本的变更。README 只放用法与说明，不再重复更新日志。
 
+## 2026-11-25
+- 新增环境自检：`server/env-check.js` + `scripts/check-env.mjs` + `check-env.bat`（Node/ffmpeg/目录可写性）。
+- 面板「设置 → 环境检查」卡片：显示 ffmpeg 状态与来源，缺失时可一键下载（`POST /env/fetch-ffmpeg`），后台执行并轮询结果。
+- 新增路由 `GET /api/video-project/env`；Codex 面板同步支持。
+- 背景：仓库不再提交 `vendor/ffmpeg/ffmpeg.exe`（100.5MB，超 GitHub 上限），新克隆需按提示补装。
+
 ## 2026-11-23
 - 出图模型支持 MiniMax-H3-Image（尺寸与 response_format 自动适配；草图/三视图/场地图可用）。
 

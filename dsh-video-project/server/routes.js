@@ -11,6 +11,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readImageGenSettings, saveImageGenSettings, fetchImageCandidates } from './image-settings.js'
 import { readProjectMedia } from './media.js'
+import { checkEnvironment } from './env-check.js'
+import { spawn } from 'node:child_process'
 import { resolveFfmpeg } from './analyze.js'
 import { spawnSync } from 'node:child_process'
 import crypto from 'node:crypto'
@@ -47,6 +49,49 @@ export function createRoutes(options = {}) {
   function settingsView() {
     return readImageGenSettings({ env, configFile })
   }
+
+  // ---- 环境自检（ffmpeg / Node / 目录可写性；新克隆仓库后用来确认缺什么） ----
+  let ffmpegFetchState = { running: false, startedAt: 0, exitCode: null, tail: '' }
+  function pluginRoot() {
+    return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+  }
+
+  const envRoutes = [
+    {
+      path: API_PREFIX + '/env',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: async () => {
+        try {
+          const report = checkEnvironment({ env })
+          return jsonValue({ ok: true, value: { ...report, fetch: ffmpegFetchState } })
+        } catch (error) { return jsonError(error) }
+      }
+    },
+    {
+      // 后台下载 ffmpeg 到 vendor/ffmpeg/（约 22~110MB）。返回立即；前端轮询 GET /env 看结果。
+      path: API_PREFIX + '/env/fetch-ffmpeg',
+      methods: ['POST'],
+      requestBody: 'buffered',
+      fetch: async () => { try {
+        if (ffmpegFetchState.running) return jsonValue({ ok: true, value: { started: false, running: true, message: 'ffmpeg 正在下载中，请稍候' } })
+        const root = pluginRoot()
+        const script = path.join(root, 'scripts', 'fetch-ffmpeg.mjs')
+        if (!fs.existsSync(script)) throw new Error('缺少 scripts/fetch-ffmpeg.mjs')
+        ffmpegFetchState = { running: true, startedAt: Date.now(), exitCode: null, tail: '' }
+        const child = spawn(process.execPath, [script], { cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+        const append = (chunk) => {
+          const text = String(chunk || '')
+          ffmpegFetchState.tail = (ffmpegFetchState.tail + text).slice(-4000)
+        }
+        if (child.stdout) child.stdout.on('data', append)
+        if (child.stderr) child.stderr.on('data', append)
+        child.on('exit', (code) => { ffmpegFetchState = { ...ffmpegFetchState, running: false, exitCode: code } })
+        child.on('error', (error) => { ffmpegFetchState = { ...ffmpegFetchState, running: false, exitCode: -1, tail: String(error && error.message || error) } })
+        return jsonValue({ ok: true, value: { started: true, running: true, message: '已开始下载 ffmpeg（约 22~110MB），完成后会自动可用' } })
+      } catch (error) { return jsonError(error) } }
+    }
+  ]
 
   const panelRoutes = [
     {
@@ -260,6 +305,7 @@ export function createRoutes(options = {}) {
   ] : []
 
   return [
+    ...envRoutes,
     ...panelRoutes,
     ...projectRoutes,
     {

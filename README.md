@@ -47,6 +47,37 @@ cd dsh-video-project
 node --test "test/*.test.mjs"
 ```
 
+## 测试不入库（本地保留）
+
+按项目要求，`test/` 目录**不进版本库**（`dsh-seedance-studio/test`、`dsh-seedance-studio/platforms/codex-plugin/test`、`dsh-video-project/test`）。
+测试文件仍在本地磁盘上，可随时执行：
+
+```powershell
+cd dsh-seedance-studio ; node --test "test/*.test.mjs"      # 157 项
+cd dsh-video-project   ; node --test "test/*.test.mjs"      # 137 项
+```
+
+如果从远端克隆（没有测试文件），功能不受影响；需要回归测试时把这些目录单独拷回即可。
+
+## 提交前检查
+
+1. **别提交大文件**（GitHub 单文件上限 100MB）。本仓库里两个大件已被 `.gitignore` 排除：
+   - `dsh-video-project/vendor/ffmpeg/ffmpeg.exe`（约 100MB，按需下载，见上文环境自检）
+   - `dsh-seedance-studio/platforms/codex-plugin/node_modules/`（约 51MB，`pnpm install` 还原）
+
+   ```powershell
+   git ls-files | Get-Item | Sort-Object Length -Descending |
+     Select-Object -First 5 Name, @{n='MB';e={[math]::Round($_.Length/1MB,2)}}
+   ```
+
+2. **别提交密钥与本机信息**：`settings.json` / `.env` 已在忽略列表；提交前可再扫一次：
+
+   ```powershell
+   git grep -nE "sk-[A-Za-z0-9]{20,}|Users\\Administrator|zxzt123"
+   ```
+
+3. 提交后确认总量应约 **3.4MB / 250 文件**（源码 + 演示媒体 + 文档）。
+
 ## 目录约定
 
 - `dsh-seedance-studio/server/`：与平台无关的数据层（模型目录、API 客户端、任务、存储、设置）

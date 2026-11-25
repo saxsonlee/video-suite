@@ -238,6 +238,47 @@ async function loadProjects() {
   state.loading = false; render();
 }
 
+/** 环境自检（ffmpeg / Node / 目录可写性）。 */
+async function loadEnv() {
+  try {
+    const value = await api('GET', API + '/env');
+    state.env = value;
+    state.envError = '';
+  } catch (error) {
+    state.envError = error && error.message ? error.message : String(error);
+  }
+  if (state.view === 'settings') render();
+}
+
+/** 触发后台下载 ffmpeg，并轮询状态直到结束。 */
+function envFetchFfmpeg(button) {
+  const btn = button || $('btnEnvFetchFfmpeg');
+  if (btn) { btn.disabled = true; btn.textContent = '下载中…'; }
+  api('POST', API + '/env/fetch-ffmpeg', {})
+    .then((value) => { setHint(value && value.message ? value.message : '已开始下载 ffmpeg', 'ok'); startEnvPoll(); })
+    .catch((error) => { setHint('下载失败：' + (error && error.message ? error.message : String(error)), 'err'); if (btn) { btn.disabled = false; btn.textContent = '下载 ffmpeg'; } });
+}
+
+/** 轮询环境状态（ffmpeg 下载可能持续 1~5 分钟）。 */
+let envPollTimer = null;
+function startEnvPoll() {
+  if (envPollTimer) return;
+  envPollTimer = setInterval(async () => {
+    try {
+      const value = await api('GET', API + '/env');
+      state.env = value;
+      if (state.view === 'settings') render();
+      const fetching = value && value.fetch && value.fetch.running;
+      if (!fetching) {
+        clearInterval(envPollTimer);
+        envPollTimer = null;
+        const ok = value && value.checks && value.checks.ffmpeg && value.checks.ffmpeg.ok;
+        setHint(ok ? 'ffmpeg 已就绪' : 'ffmpeg 仍不可用，请看下方日志', ok ? 'ok' : 'err');
+      }
+    } catch (error) { /* 忽略单次失败，继续轮询 */ }
+  }, 3000);
+}
+
 async function loadSettings() {
   state.error = '';
   try {
@@ -516,7 +557,29 @@ function renderSettings() {
   const savedModel = settings.model ? String(settings.model) : '';
   if (savedModel && models.indexOf(savedModel) === -1) models.unshift(savedModel);
   const options = ['<option value="">请选择图像模型（不会自动替你选）</option>'].concat(models.map((item) => '<option value="' + esc(item) + '"' + (item === savedModel ? ' selected' : '') + '>' + esc(item) + '</option>')).join('');
-  return '<div class="card"><div class="card-title"><span class="ico">' + ICO.image + '</span>草图分镜</div>' +
+  // 环境检查（ffmpeg / Node / 目录）——新机器或新克隆仓库时先看这里
+  const env = state.env || null;
+  const envChecks = env && env.checks ? env.checks : null;
+  const dot = (ok) => '<span class="badge" data-tone="' + (ok ? 'ok' : 'warn') + '">' + (ok ? '正常' : '缺失') + '</span>';
+  const envCard = '<div class="card"><div class="card-title"><span class="ico">' + ICO.layers + '</span>环境检查</div>' +
+    (state.envError ? '<div class="hint" style="color:var(--err)">读取失败：' + esc(state.envError) + '</div>' : '') +
+    (envChecks
+      ? '<div class="detail-kv-list">' +
+          '<div class="detail-kv"><span class="k">Node</span><span>' + esc(envChecks.node.version) + ' ' + dot(envChecks.node.ok) + '</span></div>' +
+          '<div class="detail-kv"><span class="k">ffmpeg</span><span>' + (envChecks.ffmpeg.ok ? esc(envChecks.ffmpeg.path) + ' ' + dot(true) : '未找到 ' + dot(false)) + '</span></div>' +
+          '<div class="detail-kv"><span class="k">项目存储</span><span>' + esc(envChecks.storage.path || '—') + ' ' + dot(envChecks.storage.ok) + '</span></div>' +
+          '<div class="detail-kv"><span class="k">插件目录</span><span>' + (envChecks.pluginDir.writable ? '可写' : '不可写') + ' ' + dot(envChecks.pluginDir.ok) + '</span></div>' +
+        '</div>'
+      : '<div class="hint">检查中…</div>') +
+    (envChecks && envChecks.ffmpeg.ok && envChecks.ffmpeg.version ? '<div class="hint">' + esc(envChecks.ffmpeg.version) + '（来源：' + esc(envChecks.ffmpeg.source) + '）</div>' : '') +
+    (envChecks && !envChecks.ffmpeg.ok ? '<div class="hint">缺少 ffmpeg 时：抽帧分析、视频时长/尺寸探测不可用（生成与验收表仍可正常用）。点下面按钮下载到插件目录，约 22~110MB。</div>' : '') +
+    (env && env.fetch && env.fetch.running ? '<div class="hint">正在下载 ffmpeg…（完成后自动刷新）</div>' : '') +
+    '<div class="row" style="margin-top:8px">' +
+      '<button class="ghost" id="btnEnvRefresh">重新检查</button>' +
+      (envChecks && !envChecks.ffmpeg.ok ? '<button class="primary" id="btnEnvFetchFfmpeg">下载 ffmpeg</button>' : '') +
+    '</div>' +
+  '</div>';
+  return envCard + '<div class="card"><div class="card-title"><span class="ico">' + ICO.image + '</span>草图分镜</div>' +
     '<label class="check-row"><input type="checkbox" id="setEnabled"' + (settings.enabled ? ' checked' : '') + '><span>启用草图分镜</span><span class="muted">' + (settings.enabled ? (savedModel ? '已启用：' + esc(savedModel) : '已启用，未选择模型') : '未启用') + '</span></label>' +
     '<div class="hint">关闭时智能体不会画草图；开启后还需要选择图像模型。</div>' +
     '<div class="field"><label>图像模型</label><select id="setModel">' + options + '</select></div>' +
@@ -1171,7 +1234,7 @@ function render() {
   setNav();
   const app = $('app');
   if (!app) return;
-  if (state.view === 'settings') { app.innerHTML = renderSettings(); return; }
+  if (state.view === 'settings') { app.innerHTML = renderSettings(); if (!state.env && !state.envLoading) { state.envLoading = true; loadEnv().finally(() => { state.envLoading = false }); } return; }
   if (state.detail) { app.innerHTML = renderDetail(); return; }
   app.innerHTML = renderProjects();
 }
@@ -1239,6 +1302,8 @@ document.addEventListener('click', (event) => {
   if (mediaThumb) { openMediaPreview(mediaThumb.getAttribute('data-media-preview')); return; }
   if (target.closest('[data-media-close]')) { closeMediaPreview(); return; }
   if (target.closest('#btnNewProject')) { newProject(); return; }
+  if (target.closest('#btnEnvRefresh')) { state.envError = ''; state.env = null; render(); loadEnv(); return; }
+  if (target.closest('#btnEnvFetchFfmpeg')) { envFetchFfmpeg(target.closest('#btnEnvFetchFfmpeg')); return; }
   if (target.closest('#btnRefresh')) { if (state.view === 'settings') loadSettings(); else loadProjects(); return; }
   const delBtn = target.closest('[data-delete-project]');
   if (delBtn) {

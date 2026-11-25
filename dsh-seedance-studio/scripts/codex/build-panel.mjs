@@ -75,7 +75,16 @@ export async function buildPanel(destination) {
 
 export async function buildVideoProjectPanel(destination) {
   // 视频项目共享 SPA 源：同 workspace 下 video-project 工程（独立插件，零代码依赖，只读取其前端源）
-  const spaSource = path.resolve(ROOT, '../video-project/platforms/web/public');
+  // 兼容两种目录布局：同级 dsh-video-project（新仓库）或旧版 video-project
+  const spaCandidates = [
+    path.resolve(ROOT, '../dsh-video-project/platforms/web/public'),
+    path.resolve(ROOT, '../video-project/platforms/web/public')
+  ];
+  let spaSource = '';
+  for (const dir of spaCandidates) {
+    try { await fs.access(dir); spaSource = dir; break } catch (error) { /* 尝试下一个 */ }
+  }
+  if (!spaSource) throw new Error('找不到 video-project 面板源码（期望 ../dsh-video-project/platforms/web/public）');
   const shared = await inlineSharedSpa(spaSource);
   const source = path.join(PLATFORM_ROOT, 'frontend');
   const result = await build({

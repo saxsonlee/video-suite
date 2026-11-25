@@ -1,6 +1,6 @@
 {
   "name": "video-studio",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "视频生成、人物卡、分镜、任务历史、抽帧验收与版本管理。",
   "author": {
     "name": "Local adaptation"

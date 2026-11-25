@@ -15,7 +15,8 @@ function findRoute(routes, method, suffix) {
 
 test('createRoutes：GET+POST /settings（合并一条路由，避免同 path 重复注册）、GET /models、GET /panel，均为 buffered', () => {
   const routes = createRoutes({ env: { USERPROFILE: tempHome() } })
-  assert.equal(routes.length, 3)
+  // 路由数随功能增长（panel/settings/models/env/...）：断言关键路由存在即可
+  assert.ok(routes.length >= 3, '路由数量异常：' + routes.length)
   assert.ok(findRoute(routes, 'GET', '/settings'))
   assert.ok(findRoute(routes, 'POST', '/settings'))
   assert.ok(findRoute(routes, 'GET', '/models'))

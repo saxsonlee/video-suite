@@ -52,6 +52,18 @@ seedance-output/
 !dsh-seedance-studio/locale/**
 !**/docs/**/*.png
 
+# ---- 测试（本地保留，不入库；需要跑测试时它们还在磁盘上）----
+**/test/
+**/tests/
+**/__tests__/
+**/*.test.mjs
+**/*.test.js
+
+# ---- 本地笔记（不提交）----
+SUBMIT.md
+*.local.md
+*.local
+
 # ---- 系统 ----
 .DS_Store
 Thumbs.db

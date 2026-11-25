@@ -9,6 +9,18 @@
 
 本插件**不调用视频模型、不依赖任何视频生成插件**。视频生成交给会话中可用的生成工具（例如环境里还装了 `dsh-seedance-studio` 时，由它的 `seedance_video` 生成）。
 
+## 拿到仓库先做环境自检
+
+本仓库**不包含** `vendor/ffmpeg/ffmpeg.exe`（约 100MB，GitHub 单文件上限 100MB）与 `node_modules`。新克隆后先跑一次自检：
+
+- **双击 `check-env.bat`**（自动找 Node / DSH 自带运行时），或
+- 命令行：`node scripts/check-env.mjs`（加 `--fetch` 可直接下载 ffmpeg，`--json` 供脚本使用）
+
+自检会报告：Node 版本、ffmpeg 是否存在且可执行（路径/来源/版本）、插件目录与项目存储目录是否可写。
+缺 ffmpeg 只影响**抽帧分析 / 视频时长与尺寸探测**，分镜、生成、验收表等功能照常可用。
+
+面板里也能看：**设置 → 环境检查**（有一键「下载 ffmpeg」按钮，约 22~110MB）。
+
 ## 三种安装组合都能用
 
 | 装了什么 | 能做什么 |

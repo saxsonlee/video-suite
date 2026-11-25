@@ -2,6 +2,10 @@
 
 本文件记录每个版本的变更。README 只放用法与说明，不再重复更新日志。
 
+## 2026-11-25
+- Codex 面板支持「环境检查」：`/api/video-project/env`（复用视频项目自检逻辑）。
+- 仓库不再提交 `vendor/ffmpeg/ffmpeg.exe` 与 `node_modules`，改为按需补装。
+
 ## 2026-11-23（MiniMax H3 接入）
 - 新增 MiniMax 中转站协议（`/videos`）：`MiniMax-H3` 文生/图生视频，4~15 秒、768P/2K；
 - 协议与请求体风格按默认模型自动识别（填 `MiniMax-H3` 即可，无需手填协议）；

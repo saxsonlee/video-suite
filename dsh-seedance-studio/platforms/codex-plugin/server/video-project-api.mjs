@@ -1,6 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { createProjects } from '../vendor/video-project/server/projects.js';
+import { checkEnvironment } from '../vendor/video-project/server/env-check.js';
 import { readImageGenSettings, saveImageGenSettings, fetchImageCandidates } from '../vendor/video-project/server/image-settings.js';
 
 /** 视频项目 API 前缀。 */
@@ -22,7 +23,15 @@ export function createVideoProjectApi(options = {}) {
     prefix: VIDEO_PROJECT_PREFIX,
     projectsRoot,
     async handle(method, pathname, searchParams, body) {
-      if (pathname === VIDEO_PROJECT_PREFIX + '/projects' && method === 'GET') {
+      // 环境自检（面板「环境检查」卡片）：ffmpeg / Node / 目录可写性
+    if (pathname === VIDEO_PROJECT_PREFIX + '/env' && method === 'GET') {
+      try {
+        return { status: 200, value: { ok: true, value: checkEnvironment({ env: process.env }) } };
+      } catch (error) {
+        return { status: 500, value: { ok: false, error: { code: 'ENV_CHECK_FAILED', message: String(error && error.message || error) } } };
+      }
+    }
+    if (pathname === VIDEO_PROJECT_PREFIX + '/projects' && method === 'GET') {
         const list = await projects.listProjects();
         return { status: 200, value: { ok: true, value: { projects: list, storageRoot: storageLocation().storageRoot || '', projectsRoot } } };
       }
