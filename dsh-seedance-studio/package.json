@@ -1,0 +1,63 @@
+{
+  "name": "dsh-seedance-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Seedance 视频创作台：DSH 插件（会话内自主调用工具 + Web 创作页面 + 按会话历史与再创作）",
+  "type": "module",
+  "main": "platforms/dsh-plugin/plugin.js",
+  "exports": {
+    ".": "./platforms/dsh-plugin/plugin.js",
+    "./client": "./platforms/dsh-plugin/frontend/index.js",
+    "./cordis.patch.yml": "./platforms/dsh-plugin/cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "platforms/**",
+    "server/**",
+    "media/**",
+    "locale/**",
+    "docs/**",
+    "scripts/**",
+    "test/**",
+    "README.md",
+    "PLAN.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./platforms/dsh-plugin/cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-tools": "0.2.1-rc.5"
+  },
+  "scripts": {
+    "test:host": "node --test \"test/*.test.mjs\"",
+    "build:client": "node scripts/build-client.mjs",
+    "test:client": "node scripts/check-client-bundle.mjs",
+    "verify:web": "node scripts/verify-web.mjs --bundle dsh-seedance-studio",
+    "install:dev": "node scripts/install-bundle.mjs --profile seedance-dev --apply",
+    "serve": "node platforms/web/serve.js",
+    "cli": "node platforms/cli/bin.js",
+    "build:codex": "node scripts/pack.mjs --platform codex",
+    "test:codex": "node --test --test-concurrency=1 platforms/codex-plugin/test/*.test.mjs",
+    "test:codex-panel": "node scripts/codex/check-panel.mjs && node scripts/codex/check-panel-regressions.mjs && node scripts/codex/check-panel-lifecycle.mjs && node scripts/codex/check-panel-environment.mjs",
+    "install:codex": "node scripts/codex/install.mjs"
+  },
+  "bin": {
+    "dsh-seedance-web": "./platforms/web/serve.js",
+    "dsh-seedance-cli": "./platforms/cli/bin.js"
+  },
+  "engines": {
+    "dsh": ">=0.2.1-rc.5 <0.3.0"
+  }
+}

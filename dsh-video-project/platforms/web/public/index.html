@@ -1,0 +1,1344 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>视频项目</title>
+<style>
+:root {
+  --bg: #0b0d12; --bg2: #0f1219; --panel: #141821; --panel2: #1a1f2b; --panel3: #222838;
+  --border: rgba(255,255,255,.08); --border2: rgba(255,255,255,.14);
+  --text: #eef1f7; --muted: #a3abbd; --muted2: #727b8f;
+  --accent: #5b8cff; --accent2: #8b5cf6; --ok: #34d399; --warn: #fbbf24; --err: #f87171;
+  --radius: 14px; --radius-sm: 10px;
+  --shadow: 0 18px 50px rgba(0,0,0,.45);
+}
+html[data-theme="light"] {
+  --bg: #f4f6fa; --bg2: #eef1f7; --panel: #ffffff; --panel2: #f3f5f9; --panel3: #e7eaf1;
+  --border: rgba(15,23,42,.09); --border2: rgba(15,23,42,.16);
+  --text: #111827; --muted: #4b5563; --muted2: #6b7280;
+  --accent: #3b6fe0; --accent2: #7c3aed; --ok: #059669; --warn: #b45309; --err: #dc2626;
+  --shadow: 0 18px 50px rgba(15,23,42,.10);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body { background: radial-gradient(1200px 600px at 20% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent), var(--bg); color: var(--text); font: 13px/1.6 -apple-system, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; display: flex; flex-direction: column; height: 100%; }
+header { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--panel) 86%, transparent); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; min-height: 56px; }
+header .brand { display: flex; align-items: center; gap: 10px; }
+header .brand-mark { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent); }
+header h1 { font-size: 15px; margin: 0; font-weight: 700; letter-spacing: .2px; }
+header .spacer { flex: 1; }
+nav { display: flex; gap: 4px; padding: 3px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--border); }
+nav button { height: 28px; padding: 0 14px; border-radius: 999px; border: 1px solid transparent; background: transparent; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; transition: .16s; }
+nav button:hover { color: var(--text); }
+nav button[data-active='true'] { color: var(--text); background: var(--panel3); border-color: var(--border2); box-shadow: 0 2px 10px rgba(0,0,0,.2); }
+button { height: 32px; padding: 0 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--panel2); color: var(--text); font: inherit; font-size: 12.5px; cursor: pointer; transition: .16s; }
+button:hover { border-color: var(--accent); transform: translateY(-1px); }
+button:active { transform: translateY(0); }
+button.primary { border: none; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-weight: 600; box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 30%, transparent); }
+button.primary:hover { filter: brightness(1.07); }
+button.ghost { background: transparent; }
+button.danger { color: var(--err); border-color: color-mix(in srgb, var(--err) 35%, transparent); }
+main { flex: 1 1 auto; overflow: auto; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.topbar .title { font-size: 18px; font-weight: 700; letter-spacing: .2px; }
+.topbar .sub { color: var(--muted2); font-size: 12px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
+.card-del { flex: 0 0 auto; height: 24px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--border2); background: transparent; color: var(--muted2); font-size: 11px; cursor: pointer; }
+.card-del:hover { color: #ff8a8a; border-color: #ff8a8a; }
+.project-card { position: relative; overflow: hidden; border: 1px solid var(--border); background: linear-gradient(180deg, var(--panel), var(--panel2)); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: .18s; }
+.project-card:hover { border-color: color-mix(in srgb, var(--accent) 55%, transparent); transform: translateY(-2px); box-shadow: var(--shadow); }
+.project-card .cover { height: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent2)); opacity: .85; }
+.project-card .name { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.project-card .avatar { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent2)); flex: 0 0 30px; font-size: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel2); font-size: 11px; color: var(--muted); white-space: nowrap; }
+.chip b { color: var(--text); font-weight: 600; }
+.chip[data-tone='ok'] { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 35%, transparent); background: color-mix(in srgb, var(--ok) 8%, transparent); }
+.chip[data-tone='warn'] { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); background: color-mix(in srgb, var(--warn) 8%, transparent); }
+.muted { color: var(--muted2); font-size: 12px; }
+.card { border: 1px solid var(--border); background: var(--panel); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card-title { font-size: 13px; font-weight: 650; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.card-title .ico { color: var(--accent); display: inline-flex; }
+.kv { display: grid; grid-template-columns: 96px 1fr; gap: 6px 12px; font-size: 12.5px; color: var(--muted); }
+.kv .k { color: var(--muted2); }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; padding: 4px; border-radius: 12px; background: var(--panel2); border: 1px solid var(--border); align-self: flex-start; }
+.tab { height: 30px; padding: 0 14px; border-radius: 8px; border: none; background: transparent; color: var(--muted); font: inherit; font-size: 12.5px; cursor: pointer; transition: .16s; display: inline-flex; align-items: center; gap: 6px; }
+.tab:hover { color: var(--text); }
+.tab[data-active='true'] { color: var(--text); background: var(--panel3); box-shadow: 0 2px 10px rgba(0,0,0,.22); }
+.tab .ico { color: var(--accent); display: inline-flex; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.person { border: 1px solid var(--border); background: linear-gradient(180deg, var(--panel), var(--panel2)); border-radius: var(--radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.person-head { display: flex; align-items: flex-start; gap: 10px; }
+.person-head .edit-btn { margin-left: auto; flex: 0 0 auto; white-space: nowrap; }
+.person-head > div { min-width: 0; }
+.person-id { color: var(--muted2); font-size: 11.5px; line-height: 1.5; white-space: normal; word-break: break-word; }
+.person-detail { display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: var(--muted); }
+.person-detail .k { color: var(--muted2); }
+.view-line { color: var(--muted2); font-size: 11px; line-height: 1.45; word-break: break-word; }
+.look-thumbs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.look-thumb { width: 88px; height: 66px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; background: var(--panel3); }
+.media-backdrop { position: fixed; inset: 0; z-index: 300; background: rgba(6,8,12,.86); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; cursor: zoom-out; padding: 24px; }
+.media-big { max-width: 94vw; max-height: 86vh; object-fit: contain; border-radius: 10px; box-shadow: 0 24px 80px rgba(0,0,0,.6); background: #0b0d12; }
+.media-video-box { max-width: 92vw; display: flex; flex-direction: column; gap: 8px; cursor: default; }
+.media-video-title { color: #e8ebf2; font-size: 13px; font-weight: 600; }
+.media-video { max-width: 92vw; max-height: 78vh; border-radius: 10px; background: #000; box-shadow: 0 24px 80px rgba(0,0,0,.6); }
+.media-hint { color: #c8cdd8; font-size: 12px; }
+.card-grid { align-items: start; }
+.look-editor { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-top: 8px; background: var(--panel2); }
+.look-editor-head { display: flex; align-items: center; gap: 8px; }
+.look-editor-head .name { font-weight: 650; font-size: 12.5px; }
+.look-editor-head .del { margin-left: auto; }
+.person-avatar { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent2)); flex: 0 0 38px; }
+.person-name { font-size: 13.5px; font-weight: 650; }
+.person-id { color: var(--muted2); font-size: 11.5px; }
+.look { border-left: 2px solid color-mix(in srgb, var(--accent) 50%, transparent); padding-left: 10px; display: flex; flex-direction: column; gap: 3px; }
+.look-name { font-size: 12px; font-weight: 600; color: var(--text); }
+.area { border: 1px solid var(--border); background: var(--panel2); border-radius: var(--radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.area-head { display: flex; align-items: center; gap: 8px; }
+.area-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--accent) 14%, var(--panel3)); color: var(--accent); }
+.area-name { font-size: 13.5px; font-weight: 650; }
+.landmarks { display: flex; flex-wrap: wrap; gap: 5px; }
+.landmark { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--panel3); color: var(--muted); }
+.act { border: 1px solid var(--border); background: var(--panel); border-radius: var(--radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.act-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.act-index { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+.act-name { font-size: 13.5px; font-weight: 650; }
+.act-cast { display: flex; flex-wrap: wrap; gap: 5px; }
+.act-cast .chip { background: var(--panel2); }
+.shot { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; background: var(--panel2); }
+.shot:hover { border-color: var(--border2); }
+.shot-head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.shot-id { font-weight: 700; font-size: 13px; color: var(--accent); }
+.badge { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 9px; border-radius: 999px; border: 1px solid var(--border); font-size: 11px; color: var(--muted); background: var(--panel); }
+.badge[data-tone='ok'] { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 35%, transparent); background: color-mix(in srgb, var(--ok) 10%, transparent); }
+.badge[data-tone='warn'] { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); background: color-mix(in srgb, var(--warn) 10%, transparent); }
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 56px 20px; text-align: center; border: 1px dashed var(--border2); border-radius: var(--radius); background: color-mix(in srgb, var(--panel) 60%, transparent); }
+.empty-state .icon { width: 54px; height: 54px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent2) 18%, transparent)); color: var(--accent); }
+.empty-state .t { font-size: 14px; font-weight: 650; }
+.empty-state .d { color: var(--muted2); font-size: 12.5px; max-width: 420px; }
+.loading { display: flex; flex-direction: column; gap: 10px;}
+.skeleton { height: 18px; border-radius: 8px; background: linear-gradient(90deg, var(--panel2) 25%, var(--panel3) 50%, var(--panel2) 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+@keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > label { color: var(--muted); font-size: 12px; }
+input, select, textarea { height: 34px; padding: 0 12px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg2); color: var(--text); font: inherit; min-width: 220px; transition: .16s; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+input[type='checkbox'] { min-width: 0; width: 16px; height: 16px; accent-color: var(--accent); }
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.check-row { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.check-row span { font-size: 13px; }
+.hint { color: var(--muted2); font-size: 12px; }
+.err { color: var(--err); }
+.ok { color: var(--ok); }
+.warn { color: var(--warn); }
+video { max-width: 100%; max-height: 60vh; border-radius: 10px; background: #000; }
+.modal { width: min(720px, 100%); max-height: 88vh; overflow: auto; display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow); }
+.modal .modal-title { font-size: 15px; font-weight: 700; }
+.detail-backdrop { position: fixed; inset: 0; background: rgba(8,10,14,.42); backdrop-filter: blur(2px); display: flex; justify-content: flex-end; z-index: 100; }
+.detail-panel { width: min(760px, 100%); height: 100%; overflow-y: auto; background: var(--panel); border-left: 1px solid var(--border2); box-shadow: -24px 0 60px rgba(0,0,0,.45); display: flex; flex-direction: column; gap: 14px; padding: 18px; animation: slideIn .18s ease; }
+@keyframes slideIn { from { transform: translateX(36px); opacity: .5 } to { transform: none; opacity: 1 } }
+.detail-panel .modal-title { font-size: 16px; }
+.detail-panel .card { padding: 12px 14px; gap: 8px; }
+.detail-panel .kv { grid-template-columns: 88px 1fr; }
+.modal .modal-body { display: flex; flex-direction: column; gap: 10px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.section-label { margin-top: 8px; font-size: 11.5px; font-weight: 650; color: var(--accent); letter-spacing: .04em; }
+#toast-root { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 200; }
+.toast { padding: 8px 14px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--border2); font-size: 12px; box-shadow: var(--shadow); }
+.toast.err { border-color: color-mix(in srgb, var(--err) 45%, transparent); color: var(--err); }
+.toast.ok { border-color: color-mix(in srgb, var(--ok) 45%, transparent); color: var(--ok); }
+.edit-btn { height: 24px; padding: 0 10px; font-size: 11px; border-radius: 8px; }
+.split-hints { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+.version-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.version-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; }
+.version-name { font-weight: 650; color: var(--accent); }
+.version-note { border-left: 2px solid var(--border2); padding-left: 8px; font-size: 12px; color: var(--muted); }
+.version-note-input { width: 100%; min-height: 64px; }
+.detail-video-cover { position: relative; background: #000; border-radius: 10px; overflow: hidden; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+.detail-video-poster { display: block; max-height: 65vh; max-width: 100%; width: auto; height: auto; object-fit: contain; }
+.detail-video-play { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.25); color: #fff; font-size: 12px; padding: 5px 12px; border-radius: 999px; white-space: nowrap; }
+.detail-video-fit { display: flex; justify-content: center; }
+.detail-video-frame { border: 0; border-radius: 10px; background: #000; display: block; max-width: 100%; }
+.detail-video-wrap { background: #000; border-radius: 10px; overflow: hidden; text-align: center; line-height: 0; }
+.detail-video { max-height: 65vh; max-width: 100%; width: auto; height: auto; object-fit: contain; display: inline-block; background: #000; }
+.split-hint { color: var(--warn); font-size: 11px; }
+.card-title .actions { margin-left: auto; display: flex; gap: 6px; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--panel3); border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="brand-mark">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M8 4v16M16 4v16"/></svg>
+    </span>
+    <h1>视频项目</h1>
+  </div>
+  <nav>
+    <button id="navProjects" data-view="projects">项目</button>
+    <button id="navSettings" data-view="settings">设置</button>
+  </nav>
+  <span class="spacer"></span>
+  <span id="hint" class="hint"></span>
+  <button class="primary" id="btnNewProject">+ 新建项目</button>
+  <button class="ghost" id="btnRefresh">刷新</button>
+</header>
+<main id="app"></main>
+<div id="toast-root"></div>
+<div id="modal-root"></div>
+<div id="media-root"></div>
+<script>
+'use strict';
+const API = '/api/video-project';
+const PANEL = (typeof window !== 'undefined' && window.__VP_PANEL__) ? window.__VP_PANEL__ : null;
+const CAN_PREVIEW_MEDIA = !(PANEL && PANEL.platform === 'codex');
+const state = { view: 'projects', list: [], settings: null, models: [], detail: null, tab: 'overview', loading: false, error: '', message: '' };
+const $ = (id) => document.getElementById(id);
+const esc = (value) => String(value === undefined || value === null ? '' : value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const fmtDate = (ms) => { if (!ms) return ''; try { return new Date(Number(ms)).toLocaleString(); } catch (error) { return ''; } };
+
+async function api(method, path, body) {
+  const headers = {};
+  if (body !== undefined) headers['content-type'] = 'application/json';
+  const response = await fetch(path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  const text = await response.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch (error) { data = null; }
+  if (!response.ok || !data || data.ok === false) {
+    const message = data && data.error && data.error.message ? data.error.message : ('HTTP ' + response.status);
+    throw new Error(message);
+  }
+  return data.value;
+}
+
+function setNav() {
+  document.querySelectorAll('nav button').forEach((button) => {
+    button.setAttribute('data-active', button.getAttribute('data-view') === state.view ? 'true' : 'false');
+  });
+}
+
+function setHint(text, tone) {
+  const el = $('hint');
+  if (!el) return;
+  el.textContent = text || '';
+  el.className = 'hint' + (tone === 'err' ? ' err' : tone === 'ok' ? ' ok' : tone === 'warn' ? ' warn' : '');
+}
+
+async function loadProjects() {
+  state.loading = true; state.error = ''; render();
+  try {
+    const value = await api('GET', API + '/projects');
+    state.list = Array.isArray(value.projects) ? value.projects : [];
+    state.storageRoot = value.projectsRoot || value.storageRoot || '';
+  } catch (error) { state.error = '读取项目列表失败：' + error.message; }
+  state.loading = false; render();
+}
+
+async function loadSettings() {
+  state.error = '';
+  try {
+    state.settings = await api('GET', API + '/settings');
+  } catch (error) { state.error = '读取设置失败：' + error.message; }
+  // 候选模型拉取失败不影响设置显示（离线/无密钥/候选服务超时都只是没有候选）
+  try {
+    const modelsValue = await api('GET', API + '/models');
+    state.models = modelsValue && Array.isArray(modelsValue.models) ? modelsValue.models : [];
+  } catch (error) { state.models = []; }
+  render();
+}
+
+async function openProject(name, keepTab) {
+  state.error = ''; state.detailLoading = true; render();
+  try {
+    const value = await api('GET', API + '/project?name=' + encodeURIComponent(name));
+    state.detail = value.project;
+    if (!keepTab) state.tab = 'overview';
+  } catch (error) { state.error = '读取项目详情失败：' + error.message; }
+  state.detailLoading = false; render();
+}
+
+const ICO = {
+  film: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5L10 9.5z"/></svg>',
+  user: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+  map: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 7v13l6-3 6 3 6-3V4l-6 3-6-3z"/><path d="M9 4v13M15 7v13"/></svg>',
+  layers: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg>',
+  image: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-6 6"/></svg>',
+  gear: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h.1a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  list: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  play: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8V4z"/></svg>',
+  check: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg>',
+  empty: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 4v16M16 4v16"/></svg>'
+};
+function avatar(text) {
+  const ch = String(text || '?').trim().slice(0, 1).toUpperCase();
+  return '<span class="avatar">' + esc(ch) + '</span>';
+}
+function chip(label, value, tone) {
+  return '<span class="chip"' + (tone ? ' data-tone="' + tone + '"' : '') + '>' + (value === undefined || value === null ? '' : '<b>' + esc(value) + '</b>') + (label ? ' ' + esc(label) : '') + '</span>';
+}
+
+function renderProjects() {
+  if (state.loading) {
+    return '<div class="grid">' + Array.from({ length: 3 }).map(() => '<div class="card"><div class="skeleton" style="width:40%"></div><div class="skeleton" style="width:75%"></div><div class="skeleton" style="width:55%"></div></div>').join('') + '</div>';
+  }
+  if (state.error) return '<div class="empty-state"><div class="t err">读取失败</div><div class="d">' + esc(state.error) + '</div></div>';
+  if (!state.list.length) {
+    return '<div class="empty-state"><div class="icon">' + ICO.empty + '</div><div class="t">还没有视频项目</div><div class="d">在会话里让智能体用 video_project 工具创建项目（action=create），这里会显示项目列表与全部内容。</div></div>';
+  }
+  return '<div class="grid">' + state.list.map((item, index) => {
+    const stats = [
+      chip('人物', item.characters || 0),
+      chip('镜头', item.shots || 0),
+      chip('版本', item.versions || 0),
+      item.fullVideo ? chip('全片', '✓', 'ok') : chip('全片', '—')
+    ].join('');
+    return '<div class="project-card" data-project-index="' + index + '" role="button" tabindex="0">' +
+      '<div class="cover"></div>' +
+      '<div class="name">' + avatar(item.name) + '<span>' + esc(item.name) + '</span></div>' +
+      '<div class="chips">' + stats + '</div>' +
+      (item.style ? '<div class="muted">风格：' + esc(item.style) + '</div>' : '') +
+      '<div class="card-footer">' +
+        '<span class="muted">更新：' + esc(fmtDate(item.updatedAt) || '未知') + '</span>' +
+        '<button class="card-del" data-delete-project="' + index + '" title="删除项目">删除</button>' +
+      '</div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+/** 分镜拆分建议（前端即时提示）：即使机位固定，也要按动作/人物位置拆镜头。 */
+function shotSplitHints(shot) {
+  const hints = [];
+  if (!shot) return hints;
+  const duration = Number(shot.duration) || 0;
+  const action = String(shot.action || '');
+  if (duration > 8) hints.push('时长 ' + duration + ' 秒偏长：每镜建议 3~8 秒');
+  if (duration > 8 && /固定/.test(String(shot.movement || ''))) hints.push('固定机位也要按「动作变化 / 人物入画或位置变化」拆成多个镜头');
+  const phases = (action.match(/\d+\s*[-~到至]\s*\d+\s*秒/g) || []).length;
+  if (phases >= 2) hints.push('画面写了 ' + phases + ' 段动作：一段动作对应一个镜头，拆成 ' + phases + ' 个镜头');
+  if (/然后|接着|随后|最后/.test(action) && action.length > 24) hints.push('一个镜头塞了多个动作：一个镜头只做一件事');
+  return hints;
+}
+
+function renderShotRow(shot, index) {
+  const cast = Array.isArray(shot.cast) ? shot.cast : [];
+  const badges = [];
+  if (shot.shotType) badges.push('<span class="badge">' + esc(shot.shotType) + '</span>');
+  if (shot.movement) badges.push('<span class="badge">' + esc(shot.movement) + '</span>');
+  if (shot.duration) badges.push('<span class="badge">' + esc(shot.duration) + 's</span>');
+  if (shot.kind && shot.kind !== 'shot') badges.push('<span class="badge" data-tone="warn">' + (shot.kind === 'title' ? '报幕镜头' : '转场') + '</span>');
+  return '<div class="shot" data-show-shot="' + index + '">' +
+    '<div class="shot-head"><span class="shot-id">' + esc(shot.id) + '</span>' +
+      (shot.name && shot.name !== '镜头 ' + shot.id ? '<span>' + esc(shot.name) + '</span>' : '') + badges.join('') + '<span style="flex:1"></span><button class="ghost edit-btn" data-edit-shot="' + index + '">编辑</button>' +
+    '</div>' +
+    (shot.action ? '<div>' + esc(shot.action) + '</div>' : '') +
+    (shot.dialogue ? '<div class="muted">台词：' + esc(shot.dialogue) + '</div>' : '') +
+    (shot.environment ? '<div class="muted">环境：' + esc(shot.environment) + '</div>' : '') +
+    (cast.length ? '<div class="muted">出场：' + esc(cast.map((item) => item.name + (item.lookId ? '（' + item.lookId + '）' : '')).join('、')) + '</div>' : '') +
+    (shot.sketchPath ? '<div class="muted">草图：' + esc(shot.sketchPath) + '</div>' : '') +
+    (shotSplitHints(shot).length ? '<div class="split-hints">' + shotSplitHints(shot).map((hint) => '<div class="split-hint">⚠ ' + esc(hint) + '</div>').join('') + '</div>' : '') +
+  '</div>';
+}
+
+function personCard(char, index) {
+  const identity = char.identity || {};
+  const looks = Array.isArray(char.looks) ? char.looks : [];
+  const identityRows = [
+    ['年龄', identity.age],
+    ['长相', identity.face],
+    ['发型根基', identity.hairBase],
+    ['体型', identity.body],
+    ['标志性特征', identity.signature]
+  ].filter((item) => item[1]);
+  const identityHtml = identityRows.length
+    ? '<div class="person-detail">' + identityRows.map(([label, value]) => '<span><span class="k">' + label + '：</span>' + esc(value) + '</span>').join('') + '</div>'
+    : '<div class="muted">（基础身份未填写：点编辑补充年龄/长相/发型根基/体型/标志特征）</div>';
+  const lookHtml = looks.map((look, i) => {
+    const views = look.views || {};
+    const refs = Array.isArray(look.referenceImages) ? look.referenceImages : [];
+    const rows = [];
+    if (look.costume) rows.push(['服装', look.costume]);
+    if (look.hair) rows.push(['发型/发色', look.hair]);
+    if (look.description) rows.push(['描述', look.description]);
+    if (look.referenceImages && look.referenceImages.length) rows.push(['参考图', look.referenceImages.length + ' 张']);
+    const viewRows = [['正面', views.front], ['侧面', views.side], ['背面', views.back]].filter((item) => item[1]);
+    return '<div class="look">' +
+      '<div class="look-name">' + esc(look.name || look.id || ('形象 ' + (i + 1))) + '</div>' +
+      (rows.length ? '<div class="person-detail">' + rows.map(([label, value]) => '<span><span class="k">' + label + '：</span>' + esc(value) + '</span>').join('') + '</div>' : '<div class="muted">（未填写服装/发型/描述）</div>') +
+      (refs.length ? ('<div class="view-line">三视图图片：' + refs.length + ' 张' + (CAN_PREVIEW_MEDIA ? '（见下方预览）' : '') + '</div>') : '') +
+      (CAN_PREVIEW_MEDIA && refs.length ? ('<div class="look-thumbs">' + refs.slice(0, 4).map((item) => '<img class="look-thumb" src="/api/video-project/media?path=' + encodeURIComponent(item) + '" alt="三视图" loading="lazy">').join('') + '</div>') : '') +
+      (viewRows.length ? viewRows.map(([label, value]) => '<div class="view-line"><span class="k">三视图·' + label + '：</span>' + esc(value) + '</div>').join('') : '<div class="view-line">三视图：未填写（文字描述；有图片参考请放到参考图）</div>') +
+      '</div>';
+  }).join('');
+  return '<div class="person" data-show-character="' + index + '">' +
+    '<div class="person-head">' + avatar(char.name) +
+      '<div style="min-width:0"><div class="person-name">' + esc(char.name) + '</div></div>' +
+      '<button class="ghost edit-btn" data-edit-character="' + index + '">编辑</button>' +
+    '</div>' +
+    identityHtml +
+    (looks.length ? lookHtml : '<div class="muted">（还没有形象变体：点编辑添加服装/发型/三视图）</div>') +
+  '</div>';
+}
+
+function renderDetail() {
+  const project = state.detail;
+  if (!project) return '<div class="loading"><div class="skeleton" style="width:30%"></div><div class="skeleton" style="width:60%"></div></div>';
+  const acts = Array.isArray(project.acts) ? project.acts : [];
+  const areas = Array.isArray(project.areas) ? project.areas : [];
+  const characters = Array.isArray(project.characters) ? project.characters : [];
+  const shots = Array.isArray(project.shots) ? project.shots : [];
+  const baseline = project.baseline || {};
+  const sceneMap = project.sceneMap || {};
+  const shotsByAct = (actId) => shots.filter((shot) => (shot.actId || (acts[0] && acts[0].id) || '') === actId);
+  const tabs = [['overview', '概览', ICO.film], ['bible', '设定集', ICO.user], ['acts', '幕', ICO.layers], ['shots', '分镜', ICO.list], ['video', '视频', ICO.play]];
+  const tabBar = '<div class="tabs">' + tabs.map(([key, label, ico]) => '<button class="tab" data-tab="' + key + '" data-active="' + (state.tab === key) + '"><span class="ico">' + ico + '</span>' + label + '</button>').join('') + '</div>';
+  const videoShots = project.video && Array.isArray(project.video.shots) ? project.video.shots : [];
+  const fullVideo = project.video && project.video.fullVideo;
+  const versionCount = videoShots.reduce((sum, item) => sum + (Array.isArray(item.versions) ? item.versions.length : 0), 0);
+  const head = '<div class="topbar">' +
+    '<button class="ghost" id="btnBack">← 返回列表</button>' +
+    '<button class="ghost" id="btnReloadDetail">刷新</button>' +
+    '<button class="primary" id="btnEditMeta">编辑项目信息</button>' +
+    '<button class="ghost" id="btnDeleteProject" style="margin-left:auto;color:#ff8a8a;border-color:rgba(255,138,138,.45)">删除项目</button>' +
+    '<span class="title">' + esc(project.videoName) + '</span>' +
+    (project.style ? '<span class="sub">风格：' + esc(project.style) + '</span>' : '') +
+    '<span class="chips">' + [chip('人物', characters.length), chip('区域', areas.length), chip('幕', acts.length), chip('镜头', shots.length), chip('版本', versionCount), fullVideo ? chip('全片', '✓', 'ok') : chip('全片', '—')].join('') + '</span>' +
+  '</div>';
+  let body = '';
+  if (state.tab === 'overview') {
+    const fixed = [];
+    if (baseline.ratio) fixed.push('画面比例：' + baseline.ratio);
+    if (baseline.styleCard) fixed.push('风格卡：' + baseline.styleCard);
+    body = '<div class="card"><div class="card-title"><span class="ico">' + ICO.image + '</span>项目信息</div>' +
+      '<div class="kv">' +
+        '<span class="k">保存位置</span><span class="muted" style="word-break:break-all">' + esc(project.dir || '') + '</span>' +
+        '<span class="k">确认状态</span><span>' + (project.planConfirmed ? '<span class="badge" data-tone="ok">' + ICO.check + ' 已确认</span>' : '<span class="badge" data-tone="warn">未确认</span>') + '</span>' +
+        '<span class="k">更新时间</span><span>' + esc(fmtDate(project.updatedAt)) + '</span>' +
+      '</div></div>' +
+      '<div class="card"><div class="card-title"><span class="ico">' + ICO.gear + '</span>创作参数</div>' +
+        '<div class="chips">' + (fixed.length ? fixed.map((item) => '<span class="chip">' + esc(item) + '</span>').join('') : '<span class="muted">（未设置创作参数：建议固定画面比例与风格卡；模型/分辨率/种子由生成工具端决定）</span>') + '</div></div>' +
+      '<div class="card"><div class="card-title"><span class="ico">' + ICO.map + '</span>全片环境</div>' +
+        '<div class="muted">' + esc(sceneMap.environment || '（未设置）') + '</div>' +
+        (sceneMap.description ? '<div class="muted">场景地图：' + esc(sceneMap.description) + '</div>' : '') + '</div>';
+  } else if (state.tab === 'bible') {
+    const characterCards = characters.map((char, i) => personCard(char, i)).join('');
+    const areaCards = areas.map((area, index) => '<div class="area" data-show-area="' + index + '">' +
+      '<div class="area-head"><span class="area-icon">' + ICO.map + '</span><div><div class="area-name">' + esc(area.name || area.id) + '</div><div class="person-id">' + esc(area.id) + '</div></div><span style="flex:1"></span><button class="ghost edit-btn" data-edit-area="' + index + '">编辑</button></div>' +
+      (area.description ? '<div>' + esc(area.description) + '</div>' : '') +
+      (area.layout ? '<div class="muted">布局：' + esc(area.layout) + '</div>' : '') +
+      (area.landmarks && area.landmarks.length ? '<div class="landmarks">' + area.landmarks.map((item) => '<span class="landmark">' + esc(item) + '</span>').join('') + '</div>' : '') +
+      (area.lighting ? '<div class="muted">光线：' + esc(area.lighting) + '</div>' : '') +
+      (area.props && area.props.length ? '<div class="muted">道具：' + esc(area.props.join('、')) + '</div>' : '') +
+    '</div>').join('');
+    body = '<div class="card"><div class="card-title"><span class="ico">' + ICO.user + '</span>人物卡（' + characters.length + '）</div>' +
+      (characters.length ? '<div class="card-grid">' + characterCards + '</div>' : '<div class="muted">还没有人物卡（用 save-characters 保存）</div>') + '</div>' +
+      '<div class="card"><div class="card-title"><span class="ico">' + ICO.map + '</span>区域设定（' + areas.length + '）<span class="actions"><button class="ghost edit-btn" id="btnAddArea">+ 添加区域</button></span></div>' +
+      (areas.length ? '<div class="card-grid">' + areaCards + '</div>' : '<div class="muted">还没有区域设定（用 save-areas 保存）</div>') + '</div>';
+  } else if (state.tab === 'acts') {
+    const rows = acts.map((act, index) => '<div class="act" data-show-act="' + index + '">' +
+      '<div class="act-head"><span class="act-index">' + (index + 1) + '</span><span class="act-name">' + esc(act.name || act.id) + '</span>' +
+        '<span class="badge">' + shotsByAct(act.id).length + ' 个镜头</span>' +
+        (act.areaId ? '<span class="badge">' + ICO.map + ' ' + esc(act.areaId) + '</span>' : '') + '<span style="flex:1"></span><button class="ghost edit-btn" data-edit-act="' + index + '">编辑</button></div>' +
+      (act.purpose ? '<div>目的：' + esc(act.purpose) + '</div>' : '') +
+      (act.mood ? '<div class="muted">情绪：' + esc(act.mood) + '</div>' : '') +
+      (act.cast && act.cast.length ? '<div class="act-cast">' + act.cast.map((member) => '<span class="chip">' + ICO.user + ' ' + esc(member.name) + (member.lookId ? ' · ' + esc(member.lookId) : '') + '</span>').join('') + '</div>' : '<div class="muted">出场：（未声明）</div>') +
+      (act.titleCard && act.titleCard.text ? '<div class="muted">报幕：' + esc(act.titleCard.text) + '</div>' : '') +
+    '</div>').join('');
+    body = '<div class="card"><div class="card-title"><span class="ico">' + ICO.layers + '</span>幕（' + acts.length + '）<span class="actions"><button class="ghost edit-btn" id="btnAddAct">+ 添加幕</button></span></div>' +
+      (acts.length ? rows : '<div class="muted">还没有幕设定（用 save-acts 保存）</div>') + '</div>';
+  } else if (state.tab === 'shots') {
+    if (acts.length) {
+      body = acts.map((act) => '<div class="card"><div class="card-title"><span class="ico">' + ICO.film + '</span>' + esc(act.name) + '（' + shotsByAct(act.id).length + ' 个镜头）</div>' +
+        (shotsByAct(act.id).length ? shotsByAct(act.id).map((item, i) => renderShotRow(item, i)).join('') : '<div class="muted">本幕还没有分镜</div>') + '</div>').join('');
+      const unassigned = shots.filter((shot) => !shot.actId);
+      if (unassigned.length) body += '<div class="card"><div class="card-title"><span class="ico">' + ICO.list + '</span>未归属幕的镜头（' + unassigned.length + '）</div>' + unassigned.map((item, i) => renderShotRow(item, i)).join('') + '</div>';
+    } else {
+      body = '<div class="card"><div class="card-title"><span class="ico">' + ICO.list + '</span>分镜（' + shots.length + '）</div>' +
+        (shots.length ? shots.map((item, i) => renderShotRow(item, i)).join('') : '<div class="muted">还没有分镜（用 save-shots 保存）</div>') + '</div>';
+    }
+  } else if (state.tab === 'video') {
+    const rows = videoShots.map((item) => {
+      const reviews = Array.isArray(item.reviews) ? item.reviews : [];
+      const notes = Array.isArray(item.notes) ? item.notes : [];
+      const versions = Array.isArray(item.versions) ? item.versions : [];
+      const versionStatus = (version) => {
+        const versionReviews = reviews.filter((review) => review && review.version === version.version);
+        if (versionReviews.some((review) => review.pass === true)) return { label: '已验收', tone: 'ok' };
+        if (versionReviews.length) return { label: '未通过', tone: 'warn' };
+        return { label: '未验收', tone: 'warn' };
+      };
+      const versionRows = versions.map((version) => {
+        const status = versionStatus(version);
+        const noteCount = notes.filter((note) => note && note.version === version.version).length;
+        const meta = version.meta || {};
+        const kind = meta.kind === 'full' ? (meta.suspectedFull ? '疑似全片视频' : '全片视频') : (meta.kind === 'shot' ? '分镜片段' : '未标注类型');
+        const kindTone = meta.kind === 'full' ? 'warn' : (meta.kind === 'shot' ? 'ok' : '');
+        const adopted = item.adoptedVersion === version.version;
+        return '<div class="version-row">' +
+          '<span class="version-name">' + esc(version.version) + '</span>' +
+          (version.bytes ? '<span class="muted">' + Math.round(version.bytes / 1024) + 'KB</span>' : '') +
+          (meta.durationSeconds ? '<span class="muted">' + Number(meta.durationSeconds).toFixed(1) + 's</span>' : '') +
+          '<span class="badge" data-tone="' + kindTone + '">' + kind + '</span>' +
+          '<span class="badge" data-tone="' + status.tone + '">' + status.label + '</span>' +
+          (noteCount ? '<span class="badge">标记 ' + noteCount + '</span>' : '') +
+          (adopted ? '<span class="badge" data-tone="ok">已采用</span>' : '') +
+          '<span class="chips">' +
+            '<button class="ghost edit-btn" data-version-detail="' + esc(item.id) + '|' + esc(version.version) + '">详情 / 操作</button>' +
+          '</span>' +
+        '</div>';
+      }).join('');
+      return '<div class="shot"><div class="shot-head"><span class="shot-id">' + esc(item.id) + '</span>' +
+        '<span class="badge" data-tone="' + (item.approved ? 'ok' : 'warn') + '">' + (item.approved ? '已通过' : '未通过/待验收') + '</span>' +
+        '<span class="badge">版本 ' + versions.length + '</span>' +
+        (item.adoptedVersion ? '<span class="badge" data-tone="ok">采用：' + esc(item.adoptedVersion) + '</span>' : '') + '</div>' +
+        (versions.length ? '<div class="version-list">' + versionRows + '</div>' : '<div class="muted">还没有版本</div>') + '</div>';
+    }).join('');
+    const fullVideoPlay = (CAN_PREVIEW_MEDIA && fullVideo && fullVideo.videoPath) ? '<div class="chips" style="margin-top:6px"><button class="ghost edit-btn" data-video-preview="' + esc(mediaUrl(fullVideo.videoPath)) + '" data-video-title="' + esc((project.videoName || '') + ' · 全片') + '">▶ 播放全片</button></div>' : '';
+    const adoptedList = (fullVideo && fullVideo.meta && fullVideo.meta.adoptedVersions && typeof fullVideo.meta.adoptedVersions === 'object')
+      ? Object.entries(fullVideo.meta.adoptedVersions).map(([shot, version]) => shot + ' → ' + version).join('；')
+      : '';
+    body = '<div class="card"><div class="card-title"><span class="ico">' + ICO.play + '</span>镜头视频（' + videoShots.length + ' 个有版本）</div>' +
+      (videoShots.length ? '<div class="chips">' + rows + '</div>' : '<div class="muted">还没有归档的镜头视频</div>') + '</div>' +
+      '<div class="card"><div class="card-title"><span class="ico">' + ICO.film + '</span>全片' + (fullVideo && fullVideo.meta ? (fullVideo.meta.verified ? ' <span class="badge" data-tone="ok">已验收</span>' : ' <span class="badge" data-tone="warn">待验收</span>') : '') + '</div>' +
+        '<div class="muted">' + (fullVideo ? '已保存：' + esc(fullVideo.videoPath || fullVideo.dir || '') : '未合成全片') + '</div>' +
+        (adoptedList ? '<div class="muted">采用版本：' + esc(adoptedList) + '</div>' : '') +
+        fullVideoPlay + '</div></div>';
+  }
+  return head + tabBar + body;
+}
+
+function renderSettings() {
+  const settings = state.settings || {};
+  const models = Array.isArray(state.models) ? state.models.slice() : [];
+  const savedModel = settings.model ? String(settings.model) : '';
+  if (savedModel && models.indexOf(savedModel) === -1) models.unshift(savedModel);
+  const options = ['<option value="">请选择图像模型（不会自动替你选）</option>'].concat(models.map((item) => '<option value="' + esc(item) + '"' + (item === savedModel ? ' selected' : '') + '>' + esc(item) + '</option>')).join('');
+  return '<div class="card"><div class="card-title"><span class="ico">' + ICO.image + '</span>草图分镜</div>' +
+    '<label class="check-row"><input type="checkbox" id="setEnabled"' + (settings.enabled ? ' checked' : '') + '><span>启用草图分镜</span><span class="muted">' + (settings.enabled ? (savedModel ? '已启用：' + esc(savedModel) : '已启用，未选择模型') : '未启用') + '</span></label>' +
+    '<div class="hint">关闭时智能体不会画草图；开启后还需要选择图像模型。</div>' +
+    '<div class="field"><label>图像模型</label><select id="setModel">' + options + '</select></div>' +
+    '<div class="hint">候选来自生成插件探测到的图像模型；不会自动替你选。</div>' +
+    '<label class="check-row" style="margin-top:6px"><input type="checkbox" id="setSketchRef"' + (settings.sketchAsReference ? ' checked' : '') + '><span>把分镜草图作为生成参考图</span></label>' +
+    '<div class="hint">开启后：出提示词会返回该镜头草图路径 referenceImage，生成时作为参考图传给生成工具；默认关闭。</div>' +
+  '</div>' +
+  '<div class="card"><div class="card-title"><span class="ico">' + ICO.user + '</span>人物三视图</div>' +
+    '<label class="check-row"><input type="checkbox" id="setCharacterSheet"' + (settings.characterSheet && settings.characterSheet.enabled ? ' checked' : '') + '><span>人物三视图自动出图（勾选后保存人物卡默认生成三视图图片）</span></label>' +
+    '<div class="field"><label>图像模型（该功能单独设置）</label><select id="setCharacterSheetModel">' + ['<option value="">跟随草图分镜模型</option>'].concat(models.map((item) => '<option value="' + esc(item) + '"' + ((settings.characterSheet && settings.characterSheet.model === item) ? ' selected' : '') + '>' + esc(item) + '</option>')).join('') + '</select></div>' +
+    '<div class="hint">按次计费：勾选即授权保存人物卡时自动调用图像模型生成（正/侧/背并排一张，写入该形象的参考图）。手动生成用 video_project 的 character-sheet 动作。</div>' +
+  '</div>' +
+  '<div class="card"><div class="card-title"><span class="ico">' + ICO.map + '</span>区域/场地</div>' +
+    '<label class="check-row"><input type="checkbox" id="setAreaSheet"' + (settings.areaSheet && settings.areaSheet.enabled ? ' checked' : '') + '><span>区域/场地自动出图（勾选后保存区域设定默认生成场地设定图）</span></label>' +
+    '<div class="field"><label>图像模型（该功能单独设置）</label><select id="setAreaSheetModel">' + ['<option value="">跟随草图分镜模型</option>'].concat(models.map((item) => '<option value="' + esc(item) + '"' + ((settings.areaSheet && settings.areaSheet.model === item) ? ' selected' : '') + '>' + esc(item) + '</option>')).join('') + '</select></div>' +
+    '<div class="hint">按次计费：勾选即授权保存区域设定时自动生成（一张场景概念图，体现空间布局/标志物/光线/贯穿道具，用于统一多镜头）。手动生成用 video_project 的 area-sheet 动作。</div>' +
+  '</div>' +
+  '<div class="card"><div class="card-title"><span class="ico">' + ICO.gear + '</span>接口配置</div>' +
+    '<div class="field"><label>中转站地址</label><input id="setBaseUrl" placeholder="留空则复用 dsh-seedance-studio 设置里的地址" value="' + esc(settings.baseUrl || '') + '"></div>' +
+    '<div class="field"><label>API Key</label><input id="setApiKey" type="password" placeholder="' + (settings.hasApiKey ? '已保存（' + esc(settings.apiKeyMasked || '') + '），留空不修改' : '未保存；默认复用 dsh-seedance-studio 的 Key') + '"></div>' +
+    '<div class="hint">Key 只在保存时写入本机配置文件；界面不会显示明文。</div>' +
+    '<div class="row"><button class="primary" id="btnSaveSettings">保存设置</button><span id="settingsMessage" class="hint"></span></div>' +
+    (settings.configFile ? '<div class="muted" style="word-break:break-all">配置文件：' + esc(settings.configFile) + '</div>' : '') +
+  '</div>' +
+  +
+  '<div class="hint">草图生成按次计费；每次画之前智能体会先向你确认张数与费用。</div>';
+}
+
+function toast(message, tone) {
+  const root = $('toast-root');
+  if (!root) return;
+  const el = document.createElement('div');
+  el.className = 'toast' + (tone === 'err' ? ' err' : tone === 'ok' ? ' ok' : '');
+  el.textContent = String(message || '');
+  root.appendChild(el);
+  setTimeout(() => el.remove(), 3800);
+}
+
+function fieldHtml(label, path, value, options) {
+  const opts = options || {};
+  const type = opts.type || 'text';
+  if (type === 'textarea') {
+    return '<div class="field"><label>' + esc(label) + '</label><textarea data-path="' + esc(path) + '" placeholder="' + esc(opts.placeholder || '') + '">' + esc(value === undefined || value === null ? '' : value) + '</textarea></div>';
+  }
+  if (type === 'select' && Array.isArray(opts.options)) {
+    const current = value === undefined || value === null ? '' : String(value);
+    const list = opts.options.slice();
+    if (current && list.indexOf(current) === -1) list.unshift(current);
+    return '<div class="field"><label>' + esc(label) + '</label><select data-path="' + esc(path) + '">' + list.map((item) => '<option value="' + esc(item) + '"' + (item === current ? ' selected' : '') + '>' + esc(item || '（空）') + '</option>').join('') + '</select></div>';
+  }
+  const listId = 'dl_' + String(path).replace(/[^a-z0-9]/gi, '_');
+  const dl = Array.isArray(opts.options) && opts.options.length ? '<datalist id="' + listId + '">' + opts.options.map((item) => '<option value="' + esc(item) + '"></option>').join('') + '</datalist>' : '';
+  return '<div class="field"><label>' + esc(label) + '</label><input data-path="' + esc(path) + '" type="' + type + '"' + (dl ? ' list="' + listId + '"' : '') + ' value="' + esc(value === undefined || value === null ? '' : value) + '" placeholder="' + esc(opts.placeholder || '') + '">' + dl + '</div>';
+}
+
+function listText(value) {
+  return Array.isArray(value) ? value.join('、') : '';
+}
+
+function parseList(text) {
+  return String(text || '').split(/[、,，\\n]/).map((item) => item.trim()).filter(Boolean);
+}
+
+function readForm() {
+  const result = {};
+  document.querySelectorAll('#modal-root [data-path]').forEach((el) => {
+    const path = el.getAttribute('data-path');
+    const parts = path.split('.');
+    let cursor = result;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const key = parts[i];
+      const nextKey = parts[i + 1];
+      if (!cursor[key] || typeof cursor[key] !== 'object') cursor[key] = /^\\d+$/.test(nextKey) ? [] : {};
+      cursor = cursor[key];
+    }
+    cursor[parts[parts.length - 1]] = el.value;
+  });
+  return result;
+}
+
+function closeModal() {
+  const root = $('modal-root');
+  if (root) root.innerHTML = '';
+}
+
+function autoGrowTextareas() {
+  document.querySelectorAll('#modal-root textarea').forEach((el) => {
+    el.style.overflow = 'hidden';
+    const resize = () => {
+      el.style.height = 'auto';
+      el.style.height = Math.min(Math.max(el.scrollHeight + 2, 64), 720) + 'px';
+    };
+    resize();
+    el.addEventListener('input', resize);
+  });
+}
+
+function newProject() {
+  const body = fieldHtml('项目名称（也是目录名）', 'name', '', { placeholder: '如：15秒产品短片' })
+    + fieldHtml('风格', 'style', '', { type: 'textarea', placeholder: '如：2D 卡通渲染游戏 CG 宣传片' })
+    + fieldHtml('画面比例', 'baseline.ratio', '9:16', { type: 'select', options: RATIO_OPTIONS })
+    + fieldHtml('风格卡（画风/渲染/光影基调）', 'baseline.styleCard', '', { type: 'textarea' });
+  openEditor('新建项目', body, async (form) => {
+    const name = String(form.name || '').trim();
+    if (!name) throw new Error('请填写项目名称');
+    await api('POST', API + '/project', {
+      action: 'create',
+      name,
+      payload: {
+        style: String(form.style || '').trim(),
+        baseline: { ratio: String(form.baseline && form.baseline.ratio || '').trim(), styleCard: String(form.baseline && form.baseline.styleCard || '').trim() },
+        sceneMap: {}
+      }
+    });
+    toast('项目已创建：' + name, 'ok');
+    await loadProjects();
+  });
+}
+
+function openEditor(title, bodyHtml, onSave, spec) {
+  const root = $('modal-root');
+  if (!root) return;
+  const cancelHtml = spec
+    ? '<button class="ghost" data-edit-cancel="' + esc(spec) + '">取消</button>'
+    : '<button class="ghost" data-close="1">取消</button>';
+  root.innerHTML = '<div class="detail-backdrop"><div class="detail-panel">' +
+    '<div class="row" style="position:sticky;top:-18px;background:var(--panel);padding:8px 0 12px;margin:-8px 0 0;z-index:2;border-bottom:1px solid var(--border)"><div class="modal-title">' + esc(title) + '</div><span style="flex:1"></span>' + cancelHtml + '<button class="primary" id="btnModalSave">保存</button></div>' +
+    '<div class="modal-body">' + bodyHtml + '</div>' +
+    '<div class="hint">保存后「已确认」状态会重置：需要在对话里让智能体重新 confirm-plan 才能出提示词。</div>' +
+  '</div></div>';
+  autoGrowTextareas();
+  const saveBtn = $('btnModalSave');
+  if (saveBtn) saveBtn.onclick = async () => {
+    saveBtn.disabled = true;
+    try {
+      await onSave(readForm());
+      closeModal();
+      if (spec) openDetailBySpec(spec);
+    } catch (error) { toast('保存失败：' + (error && error.message ? error.message : String(error)), 'err'); }
+    finally { saveBtn.disabled = false; }
+  };
+}
+
+function openDetailBySpec(spec) {
+  const parts = String(spec || '').split(':');
+  const raw = parts[1];
+  const listOf = (type) => {
+    const project = state.detail || {};
+    if (type === 'character') return project.characters || [];
+    if (type === 'area') return project.areas || [];
+    if (type === 'act') return project.acts || [];
+    if (type === 'shot') return project.shots || [];
+    return [];
+  };
+  let index = raw === 'new' ? listOf(parts[0]).length - 1 : Number(raw);
+  if (!Number.isFinite(index) || index < 0) return;
+  if (parts[0] === 'character') detailCharacter(index);
+  else if (parts[0] === 'area') detailArea(index);
+  else if (parts[0] === 'act') detailAct(index);
+  else if (parts[0] === 'shot') detailShot(index);
+}
+
+function parseCastText(text) {
+  return parseList(text).map((item) => {
+    const parts = item.split(':');
+    return { name: (parts[0] || '').trim(), lookId: (parts[1] || '').trim() };
+  }).filter((item) => item.name);
+}
+
+function castText(cast) {
+  return Array.isArray(cast) ? cast.map((item) => item.name + (item.lookId ? ':' + item.lookId : '')).join('、') : '';
+}
+
+async function saveProjectContent(action, payload, message) {
+  const project = state.detail;
+  if (!project) return;
+  await api('POST', API + '/project', Object.assign({ action, name: project.videoName }, payload));
+  toast(message || '已保存', 'ok');
+  await openProject(project.videoName, true);
+}
+
+// 模型建议：只用本插件内置的常见模型 ID（不读取其他插件/接口，保持插件独立）
+// 实际可用模型以你的生成环境为准（方舟官方 ID 或中转站模型名），输入框可自由填写。
+const MODEL_SUGGESTIONS = [
+  'doubao-seedance-2.5',
+  'doubao-seedance-2.5-260628',
+  'doubao-seedance-2.0-pro',
+  'doubao-seedance-2.0-fast',
+  'doubao-seedance-2.0-mini',
+  'doubao-seedance-1.0-pro',
+  'doubao-seedance-1.0-lite'
+];
+
+async function loadModelSuggestions() {
+  return MODEL_SUGGESTIONS;
+}
+
+const RESOLUTION_OPTIONS = ['480p', '720p', '1080p', '4k'];
+const RATIO_OPTIONS = ['adaptive', '9:16', '16:9', '3:4', '4:3', '1:1', '21:9'];
+const SHOT_TYPE_OPTIONS = ['远景', '全景', '中景', '近景', '特写'];
+const MOVEMENT_OPTIONS = ['固定', '推', '拉', '摇', '移', '跟拍'];
+const KIND_OPTIONS = ['shot', 'title', 'transition'];
+
+function editMeta() {
+  const project = state.detail;
+  if (!project) return;
+  const baseline = project.baseline || {};
+  const sceneMap = project.sceneMap || {};
+  const body = fieldHtml('风格', 'style', project.style, { type: 'textarea', placeholder: '如：2D 卡通渲染游戏 CG 宣传片' })
+    + fieldHtml('画面比例（创作决策：竖屏/横屏/构图）', 'baseline.ratio', baseline.ratio, { type: 'select', options: RATIO_OPTIONS })
+    + fieldHtml('风格卡（画风/渲染/光影基调）', 'baseline.styleCard', baseline.styleCard, { type: 'textarea' })
+    + fieldHtml('全片环境（时间/天气/光线/色彩基底）', 'sceneMap.environment', sceneMap.environment, { type: 'textarea' })
+    + fieldHtml('场景地图（从上方看：地点/物件/人物站位/机位）', 'sceneMap.description', sceneMap.description, { type: 'textarea' });
+  openEditor('编辑项目信息', body, async (form) => {
+    const patch = {
+      style: form.style,
+      baseline: { ratio: form.baseline.ratio, styleCard: form.baseline.styleCard },
+      sceneMap: { environment: form.sceneMap.environment, description: form.sceneMap.description }
+    };
+    await saveProjectContent('meta', { patch }, '项目信息已保存');
+  });
+}
+
+function lookBlockHtml(index, look) {
+  const views = look && look.views ? look.views : {};
+  return '<div class="look-editor" data-look-block="' + index + '">' +
+    '<div class="look-editor-head"><span class="name">形象 ' + (index + 1) + '</span><button type="button" class="ghost edit-btn del" data-remove-look="' + index + '">删除</button></div>' +
+    '<div class="form-grid">' +
+      fieldHtml('形象 id', 'looks.' + index + '.id', look && look.id) +
+      fieldHtml('形象名', 'looks.' + index + '.name', look && look.name) +
+      fieldHtml('发型/发色', 'looks.' + index + '.hair', look && look.hair) +
+      fieldHtml('服装', 'looks.' + index + '.costume', look && look.costume) +
+    '</div>' +
+    fieldHtml('形象描述', 'looks.' + index + '.description', look && look.description, { type: 'textarea' }) +
+    '<div class="form-grid">' +
+      fieldHtml('三视图·正面（文字描述，不是图片）', 'looks.' + index + '.views.front', views.front, { type: 'textarea' }) +
+      fieldHtml('三视图·侧面（文字描述）', 'looks.' + index + '.views.side', views.side, { type: 'textarea' }) +
+      fieldHtml('三视图·背面（文字描述）', 'looks.' + index + '.views.back', views.back, { type: 'textarea' }) +
+    '</div>' +
+    fieldHtml('参考图（每行一个本机绝对路径）', 'looks.' + index + '.referenceImages', (look && look.referenceImages ? look.referenceImages.join('\n') : ''), { type: 'textarea' }) +
+  '</div>';
+}
+
+function editCharacter(index) {
+  const project = state.detail;
+  if (!project) return;
+  const char = (project.characters || [])[index];
+  if (!char) return;
+  const identity = char.identity || {};
+  const looks = Array.isArray(char.looks) && char.looks.length ? char.looks : [{}];
+  let lookCount = looks.length;
+  const body = fieldHtml('角色名（文件标识，尽量不改）', 'name', char.name)
+    + '<div class="section-label">基础身份（全片不变：脸/体型/身份）</div>'
+    + '<div class="form-grid">'
+    + fieldHtml('年龄', 'identity.age', identity.age)
+    + fieldHtml('长相', 'identity.face', identity.face)
+    + fieldHtml('发型根基', 'identity.hairBase', identity.hairBase)
+    + fieldHtml('体型', 'identity.body', identity.body)
+    + '</div>'
+    + fieldHtml('标志性特征', 'identity.signature', identity.signature, { type: 'textarea' })
+    + '<div class="section-label" style="display:flex;align-items:center;gap:8px">形象变体（可多套：换装/受伤/伪装；三视图填文字描述，参考图可填本机图片路径）<span style="flex:1"></span><button type="button" class="ghost edit-btn" id="btnAddLook">+ 添加形象</button></div>'
+    + '<div id="lookEditors">' + looks.map((look, i) => lookBlockHtml(i, look)).join('') + '</div>';
+  openEditor('编辑人物卡：' + char.name, body, async (form) => {
+    const rawLooks = form.looks && typeof form.looks === 'object' ? form.looks : {};
+    const entries = Object.keys(rawLooks).map((key) => ({ key: Number(key), value: rawLooks[key] })).filter((item) => Number.isFinite(item.key)).sort((a, b) => a.key - b.key);
+    const nextLooks = entries.map((item, i) => {
+      const look = item.value || {};
+      return {
+        id: String(look.id || look.name || ('look' + (i + 1))).trim() || ('look' + (i + 1)),
+        name: String(look.name || ('形象 ' + (i + 1))).trim(),
+        hair: String(look.hair || '').trim(),
+        costume: String(look.costume || '').trim(),
+        description: String(look.description || '').trim(),
+        views: { front: String(look.views && look.views.front || '').trim(), side: String(look.views && look.views.side || '').trim(), back: String(look.views && look.views.back || '').trim() },
+        referenceImages: parseList(look.referenceImages)
+      };
+    });
+    if (!nextLooks.length) nextLooks.push({ id: 'look1', name: '默认形象', hair: '', costume: '', description: '', views: { front: '', side: '', back: '' }, referenceImages: [] });
+    const next = {
+      name: form.name || char.name,
+      identity: { age: form.identity.age, face: form.identity.face, hairBase: form.identity.hairBase, body: form.identity.body, signature: form.identity.signature },
+      looks: nextLooks,
+      notes: char.notes || ''
+    };
+    const characters = (project.characters || []).map((item, i) => (i === index ? next : { name: item.name, identity: item.identity, looks: item.looks, notes: item.notes }));
+    await saveProjectContent('characters', { characters }, '人物卡已保存');
+  }, 'character:' + index);
+  const addBtn = $('btnAddLook');
+  if (addBtn) addBtn.onclick = () => {
+    const container = $('lookEditors');
+    if (!container) return;
+    const idx = lookCount++;
+    container.insertAdjacentHTML('beforeend', lookBlockHtml(idx, {}));
+    bindLookRemovers();
+  };
+  bindLookRemovers();
+}
+
+function bindLookRemovers() {
+  document.querySelectorAll('#modal-root [data-remove-look]').forEach((btn) => {
+    btn.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const block = btn.closest('[data-look-block]');
+      if (block) block.remove();
+    };
+  });
+}
+
+function editArea(index) {
+  const project = state.detail;
+  if (!project) return;
+  const areas = project.areas || [];
+  const area = index < 0 ? { id: '', name: '', description: '', layout: '', landmarks: [], lighting: '', props: [], notes: '' } : areas[index];
+  if (!area) return;
+  const body = '<div class="form-grid">'
+    + fieldHtml('区域 id（英文/中文，分镜引用它）', 'id', area.id)
+    + fieldHtml('区域名', 'name', area.name)
+    + '</div>'
+    + fieldHtml('描述', 'description', area.description, { type: 'textarea' })
+    + fieldHtml('空间布局（入口/中心/标志物位置关系）', 'layout', area.layout, { type: 'textarea' })
+    + fieldHtml('标志物（顿号分隔）', 'landmarks', listText(area.landmarks), { type: 'textarea' })
+    + fieldHtml('光线/色调', 'lighting', area.lighting)
+    + fieldHtml('贯穿道具（顿号分隔）', 'props', listText(area.props), { type: 'textarea' })
+    + fieldHtml('备注', 'notes', area.notes, { type: 'textarea' });
+  openEditor(index < 0 ? '添加区域' : '编辑区域：' + (area.name || area.id), body, async (form) => {
+    const next = {
+      id: form.id || ('area' + (areas.length + 1)), name: form.name || form.id,
+      description: form.description, layout: form.layout,
+      landmarks: parseList(form.landmarks), lighting: form.lighting, props: parseList(form.props), notes: form.notes
+    };
+    const nextAreas = index < 0 ? areas.concat([next]) : areas.map((item, i) => (i === index ? next : item));
+    await saveProjectContent('areas', { areas: nextAreas }, '区域已保存');
+  }, 'area:' + (index < 0 ? 'new' : index));
+}
+
+function editAct(index) {
+  const project = state.detail;
+  if (!project) return;
+  const acts = project.acts || [];
+  const act = index < 0 ? { id: '', name: '', purpose: '', mood: '', areaId: '', cast: [], titleCard: {} } : acts[index];
+  if (!act) return;
+  const body = '<div class="form-grid">'
+    + fieldHtml('幕 id', 'id', act.id)
+    + fieldHtml('幕名', 'name', act.name)
+    + fieldHtml('所在区域 id', 'areaId', act.areaId)
+    + '</div>'
+    + fieldHtml('本幕目的', 'purpose', act.purpose, { type: 'textarea' })
+    + fieldHtml('情绪基调', 'mood', act.mood)
+    + fieldHtml('出场人物（格式 名字:形象id，顿号分隔；不写形象则用默认形象）', 'cast', castText(act.cast), { type: 'textarea' })
+    + fieldHtml('报幕文案（幕标题卡）', 'titleCard.text', (act.titleCard || {}).text, { type: 'textarea' })
+    + fieldHtml('报幕样式', 'titleCard.style', (act.titleCard || {}).style);
+  openEditor(index < 0 ? '添加幕' : '编辑幕：' + (act.name || act.id), body, async (form) => {
+    const next = {
+      id: form.id || ('act' + (acts.length + 1)), name: form.name || form.id,
+      purpose: form.purpose, mood: form.mood, areaId: form.areaId,
+      cast: parseCastText(form.cast), titleCard: { text: form.titleCard.text, style: form.titleCard.style }
+    };
+    const nextActs = index < 0 ? acts.concat([next]) : acts.map((item, i) => (i === index ? next : item));
+    await saveProjectContent('acts', { acts: nextActs }, '幕已保存');
+  }, 'act:' + (index < 0 ? 'new' : index));
+}
+
+function editShot(index) {
+  const project = state.detail;
+  if (!project) return;
+  const shots = project.shots || [];
+  const shot = shots[index];
+  if (!shot) return;
+  const body = '<div class="form-grid">'
+    + fieldHtml('镜头 id', 'id', shot.id)
+    + fieldHtml('归属幕 id', 'actId', shot.actId, { options: (project.acts || []).map((item) => item.id) })
+    + fieldHtml('所在区域 id', 'areaId', shot.areaId, { options: (project.areas || []).map((item) => item.id) })
+    + fieldHtml('镜头类型', 'kind', shot.kind || 'shot', { type: 'select', options: KIND_OPTIONS })
+    + '</div>'
+    + fieldHtml('镜头名称', 'name', shot.name)
+    + '<div class="form-grid">'
+    + fieldHtml('景别', 'shotType', shot.shotType, { options: SHOT_TYPE_OPTIONS })
+    + fieldHtml('机位', 'camera', shot.camera)
+    + fieldHtml('运镜', 'movement', shot.movement, { options: MOVEMENT_OPTIONS })
+    + fieldHtml('时长（秒）', 'duration', shot.duration, { type: 'number' })
+    + '</div>'
+    + fieldHtml('环境（时间+天气+光线+色彩基调）', 'environment', shot.environment, { type: 'textarea' })
+    + fieldHtml('画面内容', 'action', shot.action, { type: 'textarea' })
+    + fieldHtml('台词', 'dialogue', shot.dialogue, { type: 'textarea' })
+    + fieldHtml('字幕', 'subtitle', shot.subtitle, { type: 'textarea' })
+    + fieldHtml('音效', 'sound', shot.sound, { type: 'textarea' })
+    + fieldHtml('转场', 'transition', shot.transition)
+    + fieldHtml('出场人物（格式 名字:形象id，顿号分隔）', 'cast', castText(shot.cast), { type: 'textarea' });
+  openEditor('编辑镜头：' + shot.id, body, async (form) => {
+    const next = Object.assign({}, shot, {
+      id: form.id || shot.id, actId: form.actId, areaId: form.areaId,
+      kind: ['shot', 'title', 'transition'].includes(form.kind) ? form.kind : 'shot',
+      name: form.name, shotType: form.shotType, camera: form.camera, movement: form.movement,
+      duration: Number(form.duration) || 0, environment: form.environment, action: form.action,
+      dialogue: form.dialogue, subtitle: form.subtitle, sound: form.sound, transition: form.transition,
+      cast: parseCastText(form.cast)
+    });
+    delete next.characters;
+    const nextShots = shots.map((item, i) => (i === index ? next : item));
+    await saveProjectContent('shots', { shots: nextShots }, '分镜已保存');
+  }, 'shot:' + index);
+}
+
+function mediaUrl(filePath) {
+  return '/api/video-project/media?path=' + encodeURIComponent(String(filePath || ''));
+}
+
+/** 图片预览：DSH 面板显示缩略图（点开新窗口看大图），Codex 面板只显示路径。 */
+function renderMediaPreview(paths, label) {
+  const list = Array.isArray(paths) ? paths.filter(Boolean) : [];
+  if (!list.length) return '';
+  const pathLine = '<div class="muted" style="word-break:break-all">' + esc(label || '图片') + '：' + esc(list.join('、')) + '</div>';
+  if (!CAN_PREVIEW_MEDIA) return pathLine;
+  const thumbs = list.map((item) => '<img class="look-thumb" data-media-preview="' + esc(mediaUrl(item)) + '" src="' + mediaUrl(item) + '" alt="' + esc(label || '图片') + '" loading="lazy" title="点击放大">').join('');
+  return '<div class="look-thumbs">' + thumbs + '</div>' + pathLine;
+}
+
+/** 面板内大图预览（点击缩略图放大；点遮罩或 Esc 关闭）。 */
+function openMediaPreview(url) {
+  if (!url) return;
+  const root = $('media-root');
+  if (!root) return;
+  root.innerHTML = '<div class="media-backdrop" data-media-close="1"><img class="media-big" src="' + esc(url) + '" alt="预览">' +
+    '<div class="media-hint">点击任意处关闭</div></div>';
+}
+
+/** 视频预览（面板内播放本地视频；点遮罩关闭）。 */
+function openVideoPreview(url, title) {
+  if (!url) return;
+  const root = $('media-root');
+  if (!root) return;
+  root.innerHTML = '<div class="media-backdrop" data-media-close="1"><div class="media-video-box" onclick="event.stopPropagation()">' +
+    '<div class="media-video-title">' + esc(title || '视频预览') + '</div>' +
+    '<video class="media-video" controls autoplay playsinline src="' + esc(url) + '"></video>' +
+    '</div><div class="media-hint">点击任意处关闭</div></div>';
+}
+
+function closeMediaPreview() {
+  const root = $('media-root');
+  if (root) root.innerHTML = '';
+}
+
+function kvHtml(rows) {
+  const items = rows.filter((item) => item && item[1] !== undefined && item[1] !== null && String(item[1]) !== '');
+  if (!items.length) return '';
+  return '<div class="kv">' + items.map(([label, value]) => '<span class="k">' + esc(label) + '</span><span>' + esc(value) + '</span>').join('') + '</div>';
+}
+
+function detailSection(title, bodyHtml) {
+  if (!bodyHtml) return '';
+  return '<div class="card" style="margin:0"><div class="card-title">' + esc(title) + '</div>' + bodyHtml + '</div>';
+}
+
+function openDetail(title, bodyHtml, editAction, editLabel) {
+  const root = $('modal-root');
+  if (!root) return;
+  root.innerHTML = '<div class="detail-backdrop"><div class="detail-panel">' +
+    '<div class="row" style="position:sticky;top:-18px;background:var(--panel);padding:6px 0 10px;margin:-6px 0 0;z-index:2;border-bottom:1px solid var(--border)"><div class="modal-title">' + esc(title) + '</div><span style="flex:1"></span>' +
+    (editAction ? '<button class="primary" data-detail-edit="' + esc(editAction) + '">' + esc(editLabel || '编辑') + '</button>' : '') +
+    '<button class="ghost" data-close="1">关闭</button></div>' +
+    '<div class="modal-body" style="gap:12px">' + bodyHtml + '</div>' +
+  '</div></div>';
+}
+
+/** 验收/采用等操作后：静默刷新项目数据并重开当前版本详情（不重建整页、不闪烁）。 */
+async function refreshVersionDetail(videoName) {
+  const viewing = state.viewingVersion;
+  try {
+    const value = await api('GET', API + '/project?name=' + encodeURIComponent(videoName || (state.detail && state.detail.videoName) || ''));
+    if (value && value.project) {
+      state.detail = value.project;
+      if (typeof render === 'function') render();
+    }
+  } catch (error) { /* 数据刷新失败时退回完整刷新 */ }
+  if (viewing) openVersionDetail(viewing.shot, viewing.version);
+}
+
+/** 镜头版本详情（抽屉）：版本信息/验收记录/修改标记/播放/添加标记。 */
+function openVersionDetail(shotId, versionName) {
+  state.viewingVersion = { shot: shotId, version: versionName };
+  const project = state.detail;
+  if (!project) return;
+  const shots = (project.video && Array.isArray(project.video.shots)) ? project.video.shots : [];
+  const item = shots.find((row) => row.id === shotId);
+  if (!item) return;
+  const version = (item.versions || []).find((row) => row.version === versionName);
+  if (!version) return;
+  const reviews = (item.reviews || []).filter((review) => review && review.version === versionName);
+  const notes = (item.notes || []).filter((note) => note && note.version === versionName);
+  const meta = version.meta || {};
+  const infoRows = kvHtml([
+    ['版本', versionName],
+    ['文件大小', version.bytes ? Math.round(version.bytes / 1024) + ' KB' : ''],
+    ['生成时间', meta.generatedAt ? fmtDate(meta.generatedAt) : ''],
+    ['模型', meta.model || ''],
+    ['模式', meta.mode || ''],
+    ['任务号', meta.taskId || meta.recordId || ''],
+    ['提示词', meta.prompt || '']
+  ]);
+  const reviewsHtml = reviews.length
+    ? reviews.map((review) => '<div class="shot"><div class="shot-head"><span class="badge" data-tone="' + (review.pass ? 'ok' : 'warn') + '">' + (review.pass ? '验收通过' : '验收不通过') + '</span><span class="muted">' + esc(fmtDate(Date.parse(review.at || '') || 0)) + '</span></div>' + (review.notes ? '<div class="muted">' + esc(review.notes) + '</div>' : '') + ((review.issues || []).length ? '<div class="muted">问题：' + esc(review.issues.join('；')) + '</div>' : '') + '</div>').join('')
+    : '<div class="muted">该版本还没有验收记录</div>';
+  const notesHtml = notes.length
+    ? notes.map((note) => '<div class="version-note">' + esc(fmtDate(Date.parse(note.at || '') || 0)) + '：' + esc(note.note || '') + '</div>').join('')
+    : '<div class="muted">还没有修改标记</div>';
+  const vw = Number(meta.videoWidth) || 0;
+  const vh = Number(meta.videoHeight) || 0;
+  const aspect = vw > 0 && vh > 0 ? vw / vh : 0;
+  // 竖屏：以高度为基准（宽度按比例，黑边最少）；横屏：以宽度为基准
+  const frameStyle = aspect > 0 && aspect < 1
+    ? 'width: calc(min(62vh, 600px) * ' + aspect.toFixed(4) + '); height: min(62vh, 600px);'
+    : (aspect > 0 ? 'width: 100%; aspect-ratio: ' + aspect.toFixed(4) + '; max-height: min(62vh, 600px);' : 'width: 100%; height: min(62vh, 600px);');
+  const videoBlock = (CAN_PREVIEW_MEDIA && version.videoPath)
+    ? '<div class="detail-video-fit"><iframe class="detail-video-frame" style="' + frameStyle + '" src="' + esc(API + '/player?path=' + encodeURIComponent(version.videoPath)) + '" title="视频预览" allow="autoplay; fullscreen"></iframe></div>'
+    : (version.videoPath ? '<div class="muted">视频路径：' + esc(version.videoPath) + '</div>' : '<div class="muted">该版本没有本地视频文件</div>');
+  const root = $('modal-root');
+  if (!root) return;
+  root.innerHTML = '<div class="detail-backdrop"><div class="detail-panel">' +
+    '<div class="row" style="position:sticky;top:-18px;background:var(--panel);padding:8px 0 12px;margin:-8px 0 0;z-index:2;border-bottom:1px solid var(--border)"><div class="modal-title">镜头 ' + esc(shotId) + ' · ' + esc(versionName) + ' 详情</div><span style="flex:1"></span><button class="ghost" data-close="1">关闭</button></div>' +
+    videoBlock +
+    '<div class="row">' + ((item.adoptedVersion === versionName) ? '<span class="badge" data-tone="ok">已采用</span>' : '<button class="ghost edit-btn" data-adopt-version="' + esc(shotId) + '|' + esc(versionName) + '">设为采用</button>') + '</div>' +
+    detailSection('版本信息', infoRows) +
+    detailSection('验收记录（该版本）', '<div class="row" style="margin-bottom:6px">' +
+      '<button class="ghost edit-btn" data-review="' + esc(shotId) + '|' + esc(versionName) + '|pass">验收通过</button>' +
+      '<button class="ghost edit-btn" data-review="' + esc(shotId) + '|' + esc(versionName) + '|fail">验收不通过</button>' +
+      '<button class="ghost edit-btn" data-clear-review="' + esc(shotId) + '|' + esc(versionName) + '">撤销验收</button>' +
+    '</div>' + (reviewsHtml.length ? reviewsHtml : '<div class="muted">该版本还没有验收记录</div>')) +
+    detailSection('修改标记（该版本）', notesHtml) +
+    '<div class="card" style="margin:0"><div class="card-title">添加修改标记</div>' +
+      '<textarea id="versionNoteInput" class="version-note-input" placeholder="记录这个版本改了什么（如：分镜改为第三版、镜头时长改为 4 秒、人物换 look）"></textarea>' +
+      '<div class="row"><button class="primary" id="btnSaveVersionNote">保存标记</button><span class="muted">标记只做记录，不改视频</span></div>' +
+    '</div>' +
+  '</div></div>';
+  // 内联兜底：无论外部 CSS 如何，都按原始比例完整显示（不裁切/不拉伸）
+  try {
+    const videoEl = document.querySelector('.detail-panel video');
+    if (videoEl) {
+      videoEl.style.maxHeight = '65vh';
+      videoEl.style.maxWidth = '100%';
+      videoEl.style.width = 'auto';
+      videoEl.style.height = 'auto';
+      videoEl.style.objectFit = 'contain';
+      videoEl.style.background = '#000';
+      const wrapEl = videoEl.closest('.detail-video-wrap');
+      if (wrapEl) { wrapEl.style.background = '#000'; wrapEl.style.textAlign = 'center'; wrapEl.style.lineHeight = '0'; }
+    }
+  } catch (error) { /* 样式兜底失败不影响功能 */ }
+  const saveBtn = $('btnSaveVersionNote');
+  if (saveBtn) saveBtn.onclick = async () => {
+    const note = String(($('versionNoteInput') || {}).value || '').trim();
+    if (!note) { toast('请先填写修改标记内容', 'err'); return; }
+    saveBtn.disabled = true;
+    try {
+      await api('POST', API + '/project', { action: 'version-note', name: project.videoName, shot: shotId, version: versionName, note });
+      toast('修改标记已保存', 'ok');
+      await openProject(project.videoName, true);
+      openVersionDetail(shotId, versionName);
+    } catch (error) { toast('保存失败：' + (error && error.message ? error.message : String(error)), 'err'); }
+    finally { saveBtn.disabled = false; }
+  };
+}
+
+function detailCharacter(index) {
+  const project = state.detail;
+  if (!project) return;
+  const char = (project.characters || [])[index];
+  if (!char) return;
+  const identity = char.identity || {};
+  const looks = Array.isArray(char.looks) ? char.looks : [];
+  const identityHtml = kvHtml([
+    ['年龄', identity.age], ['长相', identity.face], ['发型根基', identity.hairBase], ['体型', identity.body], ['标志性特征', identity.signature], ['身份备注', identity.identityNotes]
+  ]) || '<div class="muted">（基础身份未填写）</div>';
+  const looksHtml = looks.map((look, i) => {
+    const views = look.views || {};
+    return '<div class="look-editor" style="margin-top:6px">' +
+      '<div class="look-editor-head"><span class="name">形象 ' + (i + 1) + '：' + esc(look.name || look.id || '未命名') + '</span></div>' +
+      kvHtml([['形象 id', look.id], ['服装', look.costume], ['发型/发色', look.hair], ['描述', look.description]]) +
+      (views.front || views.side || views.back
+        ? kvHtml([['三视图·正面', views.front], ['三视图·侧面', views.side], ['三视图·背面', views.back]])
+        : '<div class="muted">三视图：未填写（文字描述）</div>') +
+      renderMediaPreview(look.referenceImages, '参考图') +
+    '</div>';
+  }).join('');
+  openDetail('人物详情：' + char.name,
+    detailSection('基础身份（全片不变）', identityHtml) +
+    detailSection('形象变体（' + looks.length + '）', looksHtml || '<div class="muted">还没有形象变体</div>'),
+    'character:' + index);
+}
+
+function detailArea(index) {
+  const project = state.detail;
+  if (!project) return;
+  const area = (project.areas || [])[index];
+  if (!area) return;
+  openDetail('区域详情：' + (area.name || area.id),
+    detailSection('基本信息', kvHtml([['区域 id', area.id], ['区域名', area.name]])) +
+    detailSection('设定', kvHtml([['描述', area.description], ['空间布局', area.layout], ['光线/色调', area.lighting], ['标志物', (area.landmarks || []).join('、')], ['贯穿道具', (area.props || []).join('、')], ['备注', area.notes]])),
+    (area.mapPath ? detailSection('区域地图草图', renderMediaPreview([area.mapPath], '地图')) : '') ,
+    'area:' + index);
+}
+
+function detailAct(index) {
+  const project = state.detail;
+  if (!project) return;
+  const act = (project.acts || [])[index];
+  if (!act) return;
+  const shots = (project.shots || []).filter((shot) => (shot.actId || '') === act.id);
+  const shotsHtml = shots.length
+    ? shots.map((shot) => '<div class="shot"><div class="shot-head"><span class="shot-id">' + esc(shot.id) + '</span>' +
+        (shot.shotType ? '<span class="badge">' + esc(shot.shotType) + '</span>' : '') +
+        (shot.duration ? '<span class="badge">' + esc(shot.duration) + 's</span>' : '') + '</div>' +
+        (shot.action ? '<div class="muted">' + esc(shot.action) + '</div>' : '') + '</div>').join('')
+    : '<div class="muted">本幕还没有分镜</div>';
+  openDetail('幕详情：' + (act.name || act.id),
+    detailSection('基本信息', kvHtml([['幕 id', act.id], ['幕名', act.name], ['所在区域', act.areaId], ['情绪基调', act.mood]])) +
+    detailSection('目的与报幕', kvHtml([['本幕目的', act.purpose], ['报幕文案', (act.titleCard || {}).text], ['报幕样式', (act.titleCard || {}).style]])) +
+    detailSection('本幕出场人物', (act.cast && act.cast.length) ? '<div class="chips">' + act.cast.map((member) => '<span class="chip">' + ICO.user + ' ' + esc(member.name) + (member.lookId ? ' · ' + esc(member.lookId) : '') + '</span>').join('') + '</div>' : '<div class="muted">（未声明）</div>') +
+    detailSection('本幕分镜（' + shots.length + '）', shotsHtml),
+    'act:' + index);
+}
+
+function detailShot(index) {
+  const project = state.detail;
+  if (!project) return;
+  const shot = (project.shots || [])[index];
+  if (!shot) return;
+  const acts = project.acts || [];
+  const areas = project.areas || [];
+  const act = acts.find((item) => item.id === shot.actId);
+  const area = areas.find((item) => item.id === shot.areaId);
+  openDetail('分镜详情：' + shot.id,
+    detailSection('归属', kvHtml([
+      ['镜头 id', shot.id], ['镜头名称', (shot.name && shot.name !== '镜头 ' + shot.id) ? shot.name : ''], ['镜头类型', shot.kind === 'title' ? '报幕镜头' : (shot.kind === 'transition' ? '转场' : '普通镜头')],
+      ['所属幕', act ? (act.name || act.id) : shot.actId], ['所在区域', area ? (area.name || area.id) : shot.areaId]
+    ])) +
+    detailSection('镜头设计', kvHtml([
+      ['景别', shot.shotType], ['机位', shot.camera], ['运镜', shot.movement], ['时长', shot.duration ? shot.duration + ' 秒' : ''],
+      ['画面方向', shot.screenDirection], ['视线', shot.eyeline], ['风险', shot.risk]
+    ])) +
+    detailSection('画面与声音', kvHtml([
+      ['环境（时间/天气/光线/色彩）', shot.environment], ['画面内容', shot.action], ['台词', shot.dialogue], ['字幕', shot.subtitle],
+      ['音效', shot.sound], ['转场', shot.transition]
+    ])) +
+    ((shot.cast && shot.cast.length) ? detailSection('出场人物', '<div class="chips">' + shot.cast.map((member) => '<span class="chip">' + ICO.user + ' ' + esc(member.name) + (member.lookId ? ' · ' + esc(member.lookId) : '') + '</span>').join('') + '</div>') : '') +
+    (shot.sketchPath ? detailSection('草图（分镜黑白线稿）', renderMediaPreview([shot.sketchPath], '草图')) : '') +
+    detailSection('备注', kvHtml([['任务（观众学到什么）', shot.purpose], ['节拍', shot.beat], ['备注', shot.notes]])) ,
+    'shot:' + index);
+}
+
+function render() {
+  setNav();
+  const app = $('app');
+  if (!app) return;
+  if (state.view === 'settings') { app.innerHTML = renderSettings(); return; }
+  if (state.detail) { app.innerHTML = renderDetail(); return; }
+  app.innerHTML = renderProjects();
+}
+
+async function saveSettings(patch, message) {
+  try {
+    const value = await api('POST', API + '/settings', patch);
+    state.settings = value;
+    setHint(message || '已保存', 'ok');
+    render();
+  } catch (error) { setHint('保存失败：' + error.message, 'err'); }
+}
+
+document.addEventListener('click', (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  if (target.closest('#navProjects')) { state.view = 'projects'; state.detail = null; setHint(''); loadProjects(); return; }
+  if (target.closest('#navSettings')) { state.view = 'settings'; state.detail = null; setHint(''); loadSettings(); return; }
+  const reviewBtn = target.closest('[data-review]');
+  if (reviewBtn) {
+    const spec = String(reviewBtn.getAttribute('data-review') || '').split('|');
+    const project = state.detail;
+    if (project && spec[0] && spec[1]) {
+      if (spec[2] === 'pass') {
+        api('POST', API + '/project', { action: 'review', name: project.videoName, shot: spec[0], version: spec[1], pass: true, notes: '面板验收通过' })
+          .then(() => { toast('已验收通过：' + spec[0] + ' ' + spec[1], 'ok'); return refreshVersionDetail(project.videoName); })
+          .catch((error) => toast('验收失败：' + (error && error.message ? error.message : String(error)), 'err'));
+      } else {
+        // Electron 不支持 window.prompt：直接提交不通过（原因可在「添加修改标记」里补充）
+        api('POST', API + '/project', { action: 'review', name: project.videoName, shot: spec[0], version: spec[1], pass: false, notes: '面板验收不通过' })
+          .then(() => { toast('已标记不通过：' + spec[0] + ' ' + spec[1], 'ok'); return refreshVersionDetail(project.videoName); })
+          .catch((error) => toast('验收失败：' + (error && error.message ? error.message : String(error)), 'err'));
+      }
+    }
+    return;
+  }
+  const clearReviewBtn = target.closest('[data-clear-review]');
+  if (clearReviewBtn) {
+    const spec = String(clearReviewBtn.getAttribute('data-clear-review') || '').split('|');
+    const project = state.detail;
+    if (project && spec[0] && spec[1] && window.confirm('撤销 ' + spec[0] + ' ' + spec[1] + ' 的验收记录？')) {
+      api('POST', API + '/project', { action: 'clear-review', name: project.videoName, shot: spec[0], version: spec[1] })
+        .then(() => { toast('已撤销验收', 'ok'); return refreshVersionDetail(project.videoName); })
+        .catch((error) => toast('撤销失败：' + (error && error.message ? error.message : String(error)), 'err'));
+    }
+    return;
+  }
+  const adoptBtn = target.closest('[data-adopt-version]');
+  if (adoptBtn) {
+    const spec = String(adoptBtn.getAttribute('data-adopt-version') || '').split('|');
+    const project = state.detail;
+    if (project && spec[0] && spec[1]) {
+      adoptBtn.disabled = true;
+      api('POST', API + '/project', { action: 'adopt-version', name: project.videoName, shot: spec[0], version: spec[1] })
+        .then(() => { toast('已设为采用版本：' + spec[1], 'ok'); return openProject(project.videoName, true).then(() => { const viewing = state.viewingVersion; if (viewing) openVersionDetail(viewing.shot, viewing.version); }); })
+        .catch((error) => { adoptBtn.disabled = false; toast('设置失败：' + (error && error.message ? error.message : String(error)), 'err'); });
+    }
+    return;
+  }
+  const versionDetail = target.closest('[data-version-detail]');
+  if (versionDetail) { const spec = String(versionDetail.getAttribute('data-version-detail') || '').split('|'); if (spec[0]) openVersionDetail(spec[0], spec[1] || ''); return; }
+  const videoBtn = target.closest('[data-video-preview]');
+  if (videoBtn) { openVideoPreview(videoBtn.getAttribute('data-video-preview'), videoBtn.getAttribute('data-video-title')); return; }
+  const mediaThumb = target.closest('[data-media-preview]');
+  if (mediaThumb) { openMediaPreview(mediaThumb.getAttribute('data-media-preview')); return; }
+  if (target.closest('[data-media-close]')) { closeMediaPreview(); return; }
+  if (target.closest('#btnNewProject')) { newProject(); return; }
+  if (target.closest('#btnRefresh')) { if (state.view === 'settings') loadSettings(); else loadProjects(); return; }
+  const delBtn = target.closest('[data-delete-project]');
+  if (delBtn) {
+    const item = state.list[Number(delBtn.getAttribute('data-delete-project'))];
+    if (!item) return;
+    if (!window.confirm('删除项目「' + item.name + '」？项目目录、分镜、人物卡、视频版本都会删除，无法恢复。')) return;
+    api('POST', API + '/project', { action: 'delete', name: item.name })
+      .then(() => { toast('项目已删除：' + item.name, 'ok'); return loadProjects(); })
+      .catch((error) => toast('删除失败：' + (error && error.message ? error.message : String(error)), 'err'));
+    return;
+  }
+  const projectCard = target.closest('[data-project-index]');
+  if (projectCard) {
+    const item = state.list[Number(projectCard.getAttribute('data-project-index'))];
+    if (item) openProject(item.name);
+    return;
+  }
+  if (target.closest('#btnDeleteProject') && state.detail) {
+    const name = state.detail.videoName;
+    if (!window.confirm('删除项目「' + name + '」？项目目录、分镜、人物卡、视频版本都会删除，无法恢复。')) return;
+    api('POST', API + '/project', { action: 'delete', name })
+      .then(() => { toast('项目已删除：' + name, 'ok'); state.detail = null; state.view = 'projects'; setHint(''); return loadProjects(); })
+      .catch((error) => toast('删除失败：' + (error && error.message ? error.message : String(error)), 'err'));
+    return;
+  }
+  if (target.closest('#btnBack')) { state.detail = null; state.view = 'projects'; setHint(''); loadProjects(); return; }
+  if (target.closest('#btnReloadDetail') && state.detail) { openProject(state.detail.videoName); return; }
+  if (target.closest('#btnEditMeta')) { editMeta(); return; }
+  if (target.closest('#btnAddArea')) { editArea(-1); return; }
+  if (target.closest('#btnAddAct')) { editAct(-1); return; }
+  const showCharacter = target.closest('[data-show-character]');
+  if (showCharacter) { detailCharacter(Number(showCharacter.getAttribute('data-show-character'))); return; }
+  const showArea = target.closest('[data-show-area]');
+  if (showArea) { detailArea(Number(showArea.getAttribute('data-show-area'))); return; }
+  const showAct = target.closest('[data-show-act]');
+  if (showAct) { detailAct(Number(showAct.getAttribute('data-show-act'))); return; }
+  const showShot = target.closest('[data-show-shot]');
+  if (showShot) { detailShot(Number(showShot.getAttribute('data-show-shot'))); return; }
+  const editCancel = target.closest('[data-edit-cancel]');
+  if (editCancel) { const spec = String(editCancel.getAttribute('data-edit-cancel')); closeModal(); openDetailBySpec(spec); return; }
+  const detailEdit = target.closest('[data-detail-edit]');
+  if (detailEdit) { const spec = String(detailEdit.getAttribute('data-detail-edit')); const parts = spec.split(':'); const idx = Number(parts[1]); closeModal(); if (parts[0] === 'character') editCharacter(idx); else if (parts[0] === 'area') editArea(idx); else if (parts[0] === 'act') editAct(idx); else if (parts[0] === 'shot') editShot(idx); return; }
+  const editChar = target.closest('[data-edit-character]');
+  if (editChar) { editCharacter(Number(editChar.getAttribute('data-edit-character'))); return; }
+  const editAreaDom = target.closest('[data-edit-area]');
+  if (editAreaDom) { editArea(Number(editAreaDom.getAttribute('data-edit-area'))); return; }
+  const editActDom = target.closest('[data-edit-act]');
+  if (editActDom) { editAct(Number(editActDom.getAttribute('data-edit-act'))); return; }
+  const editShotDom = target.closest('[data-edit-shot]');
+  if (editShotDom) { editShot(Number(editShotDom.getAttribute('data-edit-shot'))); return; }
+  const closeEl = target.closest('[data-close]');
+  if (closeEl && (closeEl === target || (!target.closest('.modal') && !target.closest('.detail-panel')))) { closeModal(); return; }
+  if (target.closest('#modal-root') && !target.closest('.modal') && !target.closest('.detail-panel')) { closeModal(); return; }
+
+  const tab = target.closest('[data-tab]');
+  if (tab) { state.tab = tab.getAttribute('data-tab'); render(); return; }
+  if (target.closest('#btnSaveSettings')) {
+    const patch = {
+      enabled: $('setEnabled').checked,
+      sketchAsReference: $('setSketchRef').checked,
+      model: String($('setModel').value || '').trim(),
+      baseUrl: String($('setBaseUrl').value || '').trim()
+    };
+    const characterSheetEl = $('setCharacterSheet');
+    if (characterSheetEl) patch.characterSheet = { enabled: characterSheetEl.checked };
+    const areaSheetEl = $('setAreaSheet');
+    if (areaSheetEl) patch.areaSheet = { enabled: areaSheetEl.checked };
+    const csModelEl = $('setCharacterSheetModel');
+    if (csModelEl) patch.characterSheet = Object.assign({}, patch.characterSheet || {}, { model: String(csModelEl.value || '') });
+    const asModelEl = $('setAreaSheetModel');
+    if (asModelEl) patch.areaSheet = Object.assign({}, patch.areaSheet || {}, { model: String(asModelEl.value || '') });
+    const key = String($('setApiKey').value || '').trim();
+    if (key) patch.apiKey = key;
+    saveSettings(patch, '设置已保存');
+  }
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') { closeMediaPreview(); }
+});
+document.addEventListener('change', (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  if (target.id === 'setEnabled') saveSettings({ enabled: target.checked }, target.checked ? '已启用草图分镜' : '已关闭草图分镜');
+  if (target.id === 'setSketchRef') saveSettings({ sketchAsReference: target.checked }, target.checked ? '已开启草图作参考图' : '已关闭草图作参考图');
+  if (target.id === 'setCharacterSheet') saveSettings({ characterSheet: { enabled: target.checked } }, target.checked ? '已开启人物三视图自动出图（按次计费）' : '已关闭人物三视图自动出图');
+  if (target.id === 'setCharacterSheetModel') saveSettings({ characterSheet: { model: String(target.value || '') } }, target.value ? '人物三视图模型已选：' + target.value : '人物三视图模型已改为跟随草图模型');
+  if (target.id === 'setAreaSheet') saveSettings({ areaSheet: { enabled: target.checked } }, target.checked ? '已开启区域/场地自动出图（按次计费）' : '已关闭区域/场地自动出图');
+  if (target.id === 'setAreaSheetModel') saveSettings({ areaSheet: { model: String(target.value || '') } }, target.value ? '区域/场地模型已选：' + target.value : '区域/场地模型已改为跟随草图模型');
+  if (target.id === 'setModel') { const value = String(target.value || ''); if (value) saveSettings({ model: value }, '图像模型已选：' + value); }
+});
+
+(async function init() {
+  const params = new URLSearchParams(location.search);
+  const view = params.get('view');
+  try {
+    await loadProjects();
+    if (view === 'settings') { state.view = 'settings'; await loadSettings(); }
+  } catch (error) { state.error = String(error.message || error); render(); }
+  render();
+})();
+</script>
+</body>
+</html>

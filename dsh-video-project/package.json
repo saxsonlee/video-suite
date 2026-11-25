@@ -1,0 +1,49 @@
+{
+  "name": "dsh-video-project",
+  "version": "0.1.0",
+  "private": true,
+  "description": "视频项目（编导工作台）：需求补全 → 人物卡 → 分镜脚本 → 生成后画面分析/改进建议 → 多版本与全片管理；不直接调用视频模型，可独立安装使用",
+  "type": "module",
+  "main": "platforms/dsh-plugin/plugin.js",
+  "exports": {
+    ".": "./platforms/dsh-plugin/plugin.js",
+    "./server": "./server/index.js",
+    "./cordis.patch.yml": "./platforms/dsh-plugin/cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./client": "./platforms/dsh-plugin/frontend/index.js"
+  },
+  "files": [
+    "platforms/**",
+    "server/**",
+    "test/**",
+    "scripts/**",
+    "vendor/**",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./platforms/dsh-plugin/cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-tools": "0.2.1-rc.5"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "install:apply": "node scripts/install-bundle.mjs --package . --apply",
+    "test:client": "node scripts/check-client-bundle.mjs"
+  },
+  "engines": {
+    "dsh": ">=0.2.1-rc.5 <0.3.0"
+  }
+}

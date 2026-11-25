@@ -1,0 +1,5 @@
+# dsh-video-project bundle patch
+# 独立「编导工作台」插件：做需求补全/人物卡/分镜/生成后分析/版本落盘，不直接调用视频模型（生成交给会话中的生成工具）。
+- insert:
+    - id: video-project
+      name: 'dsh-video-project'

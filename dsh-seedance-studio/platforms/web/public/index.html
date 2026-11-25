@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="page.title">Seedance Video Studio</title>
+<style>
+:root {
+  --bg: #0e1014; --panel: #151920; --panel2: #1b2029; --panel3: #222833;
+  --border: rgba(255,255,255,.09); --border2: rgba(255,255,255,.16);
+  --text: #e8ebf2; --muted: #9aa3b4; --muted2: #6f7889;
+  --accent: #4f8cff; --accent2: #7c5cff; --ok: #34d399; --warn: #f5a623; --err: #ff6b6b;
+  --radius: 12px; --radius-sm: 8px;
+}
+html[data-theme="light"] {
+  --bg: #f5f6f9; --panel: #ffffff; --panel2: #f0f2f6; --panel3: #e7eaf0;
+  --border: rgba(15,23,42,.10); --border2: rgba(15,23,42,.18);
+  --text: #1a2030; --muted: #5b6478; --muted2: #8b93a7;
+  --accent: #3b6fe0; --accent2: #6b4fd8; --ok: #16a34a; --warn: #b7791f; --err: #dc2626;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font: 13px/1.55 -apple-system, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+header { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--panel) 85%, transparent); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; min-height: 52px; }
+header .brand { display: flex; align-items: center; gap: 8px; font-weight: 650; font-size: 14px; }
+header .brand svg { color: var(--accent); }
+header .spacer { flex: 1; }
+.badge { font-size: 11px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; background: transparent; }
+.badge.demo { color: #ffd479; border-color: rgba(245,166,35,.35); background: rgba(245,166,35,.08); }
+.badge.real { color: #7fe0a5; border-color: rgba(52,211,153,.35); background: rgba(52,211,153,.08); }
+.badge.err { color: #ffb3b3; border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.08); }
+button { background: var(--panel2); color: var(--text); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 7px 12px; cursor: pointer; font-size: 12.5px; transition: .15s; font-family: inherit; }
+button:hover { border-color: var(--accent); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+button.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: #fff; font-weight: 600; }
+button.primary:disabled { background: var(--panel3); color: var(--muted2); }
+button.ghost { background: transparent; border-color: var(--border); color: var(--muted); }
+button.ghost:hover { color: var(--text); }
+button.small { padding: 3px 9px; font-size: 11.5px; border-radius: 6px; }
+.lang-wrap { position: relative; }
+.lang-btn { display: inline-flex; align-items: center; gap: 4px; }
+.lang-caret { font-size: 10px; opacity: .75; }
+.lang-menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 150px; background: var(--panel); border: 1px solid var(--border2); border-radius: 10px; box-shadow: 0 16px 40px rgba(0,0,0,.35); padding: 4px; z-index: 60; }
+.lang-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; padding: 7px 10px; border: 0; background: transparent; color: var(--text); font-size: 12.5px; border-radius: 7px; cursor: pointer; }
+.lang-item:hover { background: var(--panel2); }
+.lang-item[data-active="1"] { color: var(--accent); }
+.lang-item .check { opacity: 0; font-size: 11px; }
+.lang-item[data-active="1"] .check { opacity: 1; }
+button.danger { color: var(--err); border-color: rgba(255,107,107,.3); }
+button.danger:hover { border-color: var(--err); }
+.iconbtn { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: 1px solid transparent; color: var(--muted); }
+.iconbtn:hover { color: var(--text); background: var(--panel2); border-color: var(--border); }
+main { flex: 1 1 auto; display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 14px; padding: 14px; align-items: start; }
+@media (max-width: 820px) { main { grid-template-columns: minmax(0, 1fr); } .form-panel { position: static !important; } }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; min-width: 0; }
+.form-panel { position: sticky; top: 66px; display: flex; flex-direction: column; gap: 12px; }
+.section-title { display: flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted2); font-weight: 600; }
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field > label { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 11.5px; }
+input, select, textarea { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 8px 10px; font: inherit; outline: none; transition: border-color .15s, box-shadow .15s; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+textarea { resize: vertical; min-height: 84px; line-height: 1.5; }
+select { cursor: pointer; appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 16px) 55%, calc(100% - 11px) 55%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 28px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row > .field { flex: 1 1 0; min-width: 96px; }
+.hint { font-size: 11.5px; color: var(--muted2); }
+h2 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 0; letter-spacing: .02em; }
+.history-panel > h2 { margin-bottom: 2px; }
+.counter { color: var(--muted2); font-size: 11px; }
+.checkline { display: flex; gap: 8px 16px; flex-wrap: wrap; font-size: 12px; }
+.checkline label { display: flex; align-items: center; gap: 6px; color: var(--muted); cursor: pointer; }
+.checkline input { width: auto; accent-color: var(--accent); }
+.actions { display: flex; gap: 10px; margin-top: 2px; }
+.actions button { flex: 1; height: 38px; font-size: 13px; }
+.history-panel { display: flex; flex-direction: column; gap: 10px; }
+.history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.history-card { display: flex; gap: 10px; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); min-width: 0; }
+.history-card:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); transform: translateY(-1px); box-shadow: 0 10px 26px rgba(0,0,0,.35); }
+.history-card { transition: .16s; }
+header .brand span:last-child { background: linear-gradient(135deg, var(--text), color-mix(in srgb, var(--accent) 75%, var(--text))); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 44px 18px; border: 1px dashed var(--border2); border-radius: var(--radius); text-align: center; color: var(--muted2); font-size: 12px; }
+.empty .icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent2) 18%, transparent)); color: var(--accent); }
+.skeleton { height: 16px; border-radius: 8px; background: linear-gradient(90deg, var(--panel2) 25%, var(--panel3) 50%, var(--panel2) 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+@keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+.history-skeleton { display: flex; gap: 10px; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.history-skeleton .thumb { background: var(--panel3); }
+.history-skeleton .body { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.pulse-dot { width: 6px; height: 6px; border-radius: 999px; background: var(--warn); display: inline-block; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1) } 50% { opacity: .45; transform: scale(.8) } }
+.thumb { width: 96px; height: 64px; flex: 0 0 96px; border-radius: 6px; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; color: var(--muted2); font-size: 18px; position: relative; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.card-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.card-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.card-top .meta { color: var(--muted2); font-size: 10.5px; }
+.prompt-line { color: var(--muted); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.progress { height: 4px; border-radius: 999px; background: var(--panel3); overflow: hidden; }
+.progress i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .4s; }
+.card-actions { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+.card-actions button { padding: 2px 8px; font-size: 11px; border-radius: 6px; }
+.empty { text-align: center; padding: 36px 16px; color: var(--muted2); font-size: 12px; border: 1px dashed var(--border2); border-radius: var(--radius); }
+.detail-backdrop { position: fixed; inset: 0; background: rgba(8,10,14,.42); backdrop-filter: blur(2px); display: flex; justify-content: flex-end; z-index: 250; }
+.detail-panel { width: min(620px, 100%); height: 100%; overflow-y: auto; background: var(--panel); border-left: 1px solid var(--border2); box-shadow: -24px 0 60px rgba(0,0,0,.45); display: flex; flex-direction: column; gap: 12px; padding: 18px; animation: slideIn .18s ease; }
+@keyframes slideIn { from { transform: translateX(36px); opacity: .5 } to { transform: none; opacity: 1 } }
+.detail-panel .modal-title { font-size: 16px; }
+.detail-media img { width: 100%; max-height: 300px; object-fit: contain; border-radius: 10px; background: #000; }
+.detail-section-title { margin-top: 4px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted2); font-weight: 600; }
+.detail-prompt { white-space: pre-wrap; word-break: break-word; font-size: 12.5px; line-height: 1.7; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.detail-prompt.collapsed { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; max-height: 10.5em; }
+.detail-video-wrap { background: #000; border-radius: 10px; overflow: hidden; }
+.detail-video { width: 100%; max-height: 320px; display: block; background: #000; }
+.detail-kv-list { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; }
+.detail-kv { display: grid; grid-template-columns: 96px 1fr; gap: 8px; }
+.detail-kv .k { color: var(--muted2); }
+.backdrop { position: fixed; inset: 0; background: rgba(8,10,14,.62); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+.modal { width: min(640px, 100%); max-height: 86vh; overflow: auto; background: var(--panel); border: 1px solid var(--border2); border-radius: 14px; padding: 18px 20px; box-shadow: 0 24px 70px rgba(0,0,0,.5); display: flex; flex-direction: column; gap: 12px; }
+.modal h3 { margin: 0; font-size: 15px; }
+.modal video { width: 100%; max-height: 52vh; border-radius: 8px; background: #000; }
+#recreateHint { display: none; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; border: 1px solid rgba(245,166,35,.3); background: rgba(245,166,35,.08); border-radius: var(--radius-sm); font-size: 11.5px; color: #ffd479; }
+#recreateHint.show { display: flex; }
+#toast-root { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 200; }
+.toast { padding: 8px 14px; border-radius: 8px; background: var(--panel2); border: 1px solid var(--border2); font-size: 12px; max-width: 360px; box-shadow: 0 8px 22px rgba(0,0,0,.35); }
+.toast.err { border-color: rgba(255,107,107,.4); color: #ffb3b3; }
+.toast.ok { border-color: rgba(52,211,153,.4); color: #8ce2ad; }
+.sd-select { position: relative; }
+.sd-select-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; text-align: left; background: var(--bg); border: 1px solid var(--border2); color: var(--text); padding: 8px 10px; border-radius: var(--radius-sm); }
+.sd-select-btn::after { content: '▾'; opacity: .55; margin-left: 8px; }
+.sd-select-list { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px); background: var(--panel2); border: 1px solid var(--border2); border-radius: 8px; padding: 4px; z-index: 30; box-shadow: 0 10px 28px rgba(0,0,0,.4); max-height: 240px; overflow: auto; }
+.sd-select-option { display: block; width: 100%; text-align: left; background: transparent; border: 0; padding: 7px 10px; color: var(--text); border-radius: 6px; cursor: pointer; font: inherit; }
+.sd-select-option:hover { background: var(--panel); }
+.sd-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.sd-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border2); background: transparent; color: var(--text); font-size: 11.5px; cursor: pointer; }
+.sd-chip.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.sd-chip-x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 13px; padding: 0 2px; }
+html[data-theme="light"] input, html[data-theme="light"] select, html[data-theme="light"] textarea { background: #fff; }
+html[data-theme="light"] .toast { background: #fff; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--panel3); border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5L10 9.5z"/></svg>
+    <span data-i18n="header.title"></span>
+  </div>
+  <span id="modeBadge" class="badge" data-i18n="header.modeLoading"></span>
+  <span class="badge" id="storageBadge" data-i18n-title="header.storageTitle" style="display:none"></span>
+  <span class="spacer"></span>
+  <div class="lang-wrap"><button class="small ghost lang-btn" id="btnLang" aria-haspopup="true"><span id="langBtnLabel"></span><span class="lang-caret">⌄</span></button><div class="lang-menu" id="langMenu" hidden></div></div>
+  <button class="iconbtn" id="btnRefresh" title="刷新">⟳</button>
+  <button class="iconbtn" id="btnSettings" title="设置">⚙</button>
+</header>
+<main>
+  <section class="panel form-panel">
+    <h2 data-i18n="form.title" style="display:none"></h2>
+    <div id="recreateHint"><span id="recreateText"></span><button class="small ghost" id="btnCancelRecreate" data-i18n="form.cancelRecreate"></button></div>
+    <div class="section-title" data-i18n="form.promptSection"></div>
+    <div class="field">
+      <label><span data-i18n="form.promptLabel"></span> <span class="counter" id="promptCount">0 / 20000</span></label>
+      <textarea id="prompt" maxlength="20000" data-i18n-placeholder="form.promptPlaceholder"></textarea>
+    </div>
+    <div class="section-title" data-i18n="form.modelSection"></div>
+    <div class="field">
+      <label data-i18n="form.model"></label>
+      <select id="model"></select>
+    </div>
+    <div class="field">
+      <label data-i18n="form.mode"></label>
+      <select id="mode">
+        <option value="text2video" data-i18n="mode.text2video"></option>
+        <option value="image2video" data-i18n="mode.image2video"></option>
+        <option value="firstlast" data-i18n="mode.firstlast"></option>
+        <option value="reference" data-i18n="mode.reference"></option>
+      </select>
+    </div>
+    <div class="section-title" data-i18n="form.materialSection"></div>
+    <div class="field" id="firstFrameField" style="display:none">
+      <label data-i18n="form.firstFrame"></label>
+      <input id="firstFrameUrl" placeholder="https://…/first.png">
+      <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+        <button type="button" class="small ghost" id="btnPickFirst">选择本地图片</button>
+        <input type="file" id="fileFirst" accept="image/*" hidden>
+        <span id="firstLocalName" class="hint"></span>
+        <button type="button" class="small ghost" id="btnClearFirst" style="display:none">清除</button>
+        <img id="previewFirst" style="height:40px;border-radius:6px;border:1px solid var(--border);display:none" alt="">
+      </div>
+    </div>
+    <div class="field" id="lastFrameField" style="display:none">
+      <label data-i18n="form.lastFrame"></label>
+      <input id="lastFrameUrl" placeholder="https://…/last.png">
+      <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+        <button type="button" class="small ghost" id="btnPickLast">选择本地图片</button>
+        <input type="file" id="fileLast" accept="image/*" hidden>
+        <span id="lastLocalName" class="hint"></span>
+        <button type="button" class="small ghost" id="btnClearLast" style="display:none">清除</button>
+        <img id="previewLast" style="height:40px;border-radius:6px;border:1px solid var(--border);display:none" alt="">
+      </div>
+    </div>
+    <div class="field" id="refField" style="display:none">
+      <label data-i18n="form.refUrls"></label>
+      <textarea id="refUrls" style="min-height:56px" placeholder="https://…/ref1.png"></textarea>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+        <button type="button" class="small ghost" id="btnPickRefs">选择本地图片（可多选）</button>
+        <input type="file" id="fileRefs" accept="image/*" multiple hidden>
+        <span id="refLocalName" class="hint"></span>
+        <button type="button" class="small ghost" id="btnClearRefs" style="display:none">清除本地图</button>
+      </div>
+      <div id="previewRefs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
+    </div>
+    <div class="field" id="videoUrlField" style="display:none">
+      <label data-i18n="form.videoUrl"></label>
+      <input id="videoUrl" placeholder="https://…/video.mp4">
+      <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+        <button type="button" class="small ghost" id="btnPickHistoryVideo">从历史视频选择</button>
+        <span class="hint">本地视频无法直接上传（接口只接受 URL），可从历史已生成的视频中选择</span>
+      </div>
+    </div>
+    <div class="field" id="draftField" style="display:none">
+      <label data-i18n="form.draftHint"></label>
+    </div>
+    <div class="row">
+      <div class="field"><label data-i18n="form.resolution"></label><select id="resolution"></select></div>
+      <div class="field"><label data-i18n="form.ratio"></label><select id="ratio"></select></div>
+      <div class="field"><label data-i18n="form.duration"></label><select id="duration"></select></div>
+    </div>
+    <div class="field" style="margin-top:12px">
+      <div class="checkline">
+        <label id="audioLabel"><input type="checkbox" id="generateAudio"> <span data-i18n="form.generateAudio"></span></label>
+        <label id="watermarkLabel"><input type="checkbox" id="watermark"> <span data-i18n="form.watermark"></span></label>
+        <label id="returnLastFrameLabel"><input type="checkbox" id="returnLastFrame" checked> <span data-i18n="form.returnLastFrame"></span></label>
+        <label id="cameraFixedLabel" style="display:none"><input type="checkbox" id="cameraFixed"> <span data-i18n="form.cameraFixed"></span></label>
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div class="field" id="seedField" style="display:none"><label data-i18n="form.seed"></label><input id="seed" data-i18n-placeholder="form.seedPlaceholder"></div>
+      <div class="field" id="capturedFrameField" style="display:none"><label data-i18n="form.capturedFrame"></label><div class="checkline"><span id="capturedFrameName" class="hint"></span><button class="small ghost" id="btnClearCapturedFrame" type="button" data-i18n="form.clearCapturedFrame"></button></div></div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="btnSubmit" data-i18n="form.submit"></button>
+    </div>
+    <p class="hint" id="formHint" style="margin:10px 0 0" data-i18n="form.hint"></p>
+  </section>
+
+  <section class="panel history-panel">
+    <h2 data-i18n="history.title"></h2>
+    <div id="history"></div>
+  </section>
+</main>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script src="i18n.js"></script>
+<script>
+'use strict';
+const I18n = window.SeedanceI18n;
+const T = I18n.t;
+
+/** 语言菜单：右上角小按钮显示当前语言；点开列出全部语言（当前语言打勾），选择即切换。 */
+function renderLangMenu() {
+  const label = $('langBtnLabel');
+  if (label) label.textContent = I18n.languageName(I18n.getLanguage());
+  const menu = $('langMenu');
+  if (!menu) return;
+  menu.innerHTML = I18n.LANGUAGES.map((code) => '<button class="lang-item" data-lang="' + esc(code) + '" data-active="' + (code === I18n.getLanguage() ? '1' : '0') + '"><span>' + esc(I18n.languageName(code)) + '</span><span class="check">✓</span></button>').join('');
+}
+const API = '/api/seedance';
+const LS_SESSION = 'seedance.standalone.session';
+const LS_TOKEN = 'seedance.standalone.token';
+// 宿主（DSH / Codex 的 iframe 面板）下发的参数；独立 Web 版为 null
+const PANEL = (typeof window !== 'undefined' && window.__SD_PANEL__) ? window.__SD_PANEL__ : null;
+
+const state = {
+  sessionId: PANEL ? (PANEL.sessionId || '') : (localStorage.getItem(LS_SESSION) || ('standalone-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6))),
+  allSessions: PANEL ? !PANEL.sessionId : false,
+  token: PANEL ? '' : (new URLSearchParams(location.search).get('token') || localStorage.getItem(LS_TOKEN) || ''),
+  config: null,
+  settings: null,
+  records: [],
+  recreateSourceId: null,
+  capturedFrame: '',
+  capturedFrameName: '',
+  relayPool: [],
+  relayModels: [],
+  localFirst: '',
+  localLast: '',
+  localRefs: [],
+  historyLoading: false
+};
+if (!PANEL) {
+  localStorage.setItem(LS_SESSION, state.sessionId);
+  if (state.token) localStorage.setItem(LS_TOKEN, state.token);
+}
+if (PANEL && (PANEL.theme === 'light' || PANEL.theme === 'dark')) {
+  document.documentElement.dataset.theme = PANEL.theme;
+}
+
+const $ = (id) => document.getElementById(id);
+const esc = (value) => String(value === undefined || value === null ? '' : value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+function toast(message, kind) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + (kind || '');
+  el.textContent = message;
+  $('toast-root').appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+
+async function api(method, path, body) {
+  const headers = {};
+  if (state.token) headers.authorization = 'Bearer ' + state.token;
+  if (body !== undefined) headers['content-type'] = 'application/json';
+  const response = await fetch(path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  const data = await response.json().catch(() => null);
+  if (!response.ok || !data || data.ok !== true) {
+    const message = data && data.error && data.error.message ? data.error.message : ('HTTP ' + response.status);
+    throw new Error(message);
+  }
+  return data.value;
+}
+
+function fmtTime(ms) {
+  if (!ms) return '';
+  const date = new Date(ms);
+  const pad = (n) => String(n).padStart(2, '0');
+  return (date.getMonth() + 1) + '-' + pad(date.getDate()) + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+}
+
+const STATUS_KEYS = ['queued', 'running', 'succeeded', 'failed', 'cancelled', 'expired'];
+
+function statusLabel(status) {
+  if (STATUS_KEYS.indexOf(status) >= 0) return T('status.' + status);
+  return status || T('status.unknown');
+}
+
+function statusClass(status) {
+  if (status === 'succeeded') return 'real';
+  if (status === 'failed' || status === 'expired') return 'err';
+  return 'demo';
+}
+
+function renderModeBadge() {
+  const config = state.config;
+  const badge = $('modeBadge');
+  if (!config) { badge.textContent = T('badge.offline'); badge.className = 'badge err'; return; }
+  if (config.demo) {
+    badge.textContent = T('badge.demo');
+    badge.className = 'badge demo';
+  } else {
+    badge.textContent = config.provider === 'relay' ? T('mode.real.relay') : T('mode.real.ark');
+    badge.className = 'badge real';
+  }
+  if (state.settings && state.settings.storageRoot) {
+    const parts = String(state.settings.storageRoot).split(/[\\/]/);
+    $('storageBadge').textContent = T('storage.label') + parts.slice(-2).join('/');
+    $('storageBadge').title = state.settings.storageRoot;
+  }
+}
+
+function currentModel() {
+  if (!state.config) return null;
+  const id = $('model').value;
+  return (state.config.models || []).find((model) => model.id === id) || null;
+}
+
+function option(value, label) {
+  return '<option value="' + esc(value) + '">' + esc(label) + '</option>';
+}
+
+function renderModelOptions() {
+  if (!state.config) return;
+  const enabled = state.settings && Array.isArray(state.settings.relayModels) ? state.settings.relayModels : [];
+  const all = state.config.models || [];
+  let list = enabled.length
+    ? enabled.map((entry) => all.find((model) => model.id === entry.id) || { id: entry.id, label: entry.label || entry.id })
+    : all;
+  // 默认模型必须出现在下拉里：它可能不在「已选模型清单」中（例如内置的 MiniMax-H3）
+  const defaultId = (state.config.defaults && state.config.defaults.defaultModel) || '';
+  if (defaultId && !list.some((model) => model.id === defaultId)) {
+    list = [all.find((model) => model.id === defaultId) || { id: defaultId, label: defaultId }].concat(list);
+  }
+  $('model').innerHTML = list.map((model) => option(model.id, model.label || model.id)).join('');
+  const defaults = state.config.defaults || {};
+  if (defaults.defaultModel && list.some((model) => model.id === defaults.defaultModel)) $('model').value = defaults.defaultModel;
+}
+
+function renderParamOptions() {
+  const model = currentModel();
+  if (!model) return;
+  const defaults = state.config.defaults || {};
+  const resolutions = Array.isArray(model.resolutions) ? model.resolutions : ['720p'];
+  $('resolution').innerHTML = resolutions.map((value) => option(value, value)).join('');
+  const ratios = Array.isArray(model.ratios) ? model.ratios : ['adaptive'];
+  $('ratio').innerHTML = ratios.map((value) => option(value, value)).join('');
+  const durations = [];
+  if (model.autoDuration) durations.push(-1);
+  const range = Array.isArray(model.durations) ? model.durations : [];
+  if (range.length === 2) {
+    const [min, max] = range;
+    for (let d = min; d <= max; d += (max - min > 12 ? 1 : 1)) durations.push(d);
+  }
+  $('duration').innerHTML = durations.length
+    ? durations.map((value) => option(value, value === -1 ? T('duration.auto') : T('duration.seconds', { value }))).join('')
+    : option(5, T('duration.fallback', { value: 5 }));
+  const defaultValue = defaults.params || {};
+  $('resolution').value = defaultValue.resolution || (resolutions.indexOf('720p') >= 0 ? '720p' : resolutions[0] || '720p');
+  $('ratio').value = defaultValue.ratio || (ratios.indexOf('adaptive') >= 0 ? 'adaptive' : ratios[0] || 'adaptive');
+  const durationDefault = typeof defaultValue.duration === 'number' ? defaultValue.duration : (durations.length ? durations[0] : 5);
+  $('duration').value = String(durationDefault === -1 ? -1 : durationDefault);
+  $('generateAudio').checked = model.audio === true;
+  $('returnLastFrame').checked = true;
+  $('watermark').checked = false;
+  updateModeFields();
+}
+
+const FALLBACK_MODES = [
+  { id: 'text2video', label: '文生视频' },
+  { id: 'image2video', label: '图生视频' },
+  { id: 'firstlast', label: '首尾帧' },
+  { id: 'reference', label: '全模态参考（图/视频/音频）' },
+  { id: 'edit', label: '视频编辑' },
+  { id: 'extend', label: '视频延长' },
+  { id: 'draft', label: '样片（低成本）' },
+  { id: 'draft-final', label: '样片转正式' }
+];
+
+function modeList() {
+  const modes = state.config && Array.isArray(state.config.modes) ? state.config.modes : null;
+  const list = modes && modes.length ? modes : FALLBACK_MODES;
+  // Draft-to-final is not a creation mode (started from a saved result), so hide it in the dropdown.
+  const filtered = list.filter((mode) => mode && mode.id !== 'draft-final');
+  // 按当前模型能力过滤（如 MiniMax H3 只支持文生视频 / 图生视频）
+  const model = currentModel();
+  const allowed = model && Array.isArray(model.modes) && model.modes.length ? model.modes : null;
+  return allowed ? filtered.filter((mode) => allowed.indexOf(mode.id) !== -1) : filtered;
+}
+
+function renderModeOptions() {
+  const previous = $('mode').value;
+  const list = modeList();
+  $('mode').innerHTML = list.map((mode) => option(mode.id, T('mode.' + mode.id))).join('');
+  if (list.some((mode) => mode.id === previous)) $('mode').value = previous;
+  updateModeFields();
+}
+
+function updateModeFields() {
+  const mode = $('mode').value;
+  const model = currentModel();
+  $('firstFrameField').style.display = (mode === 'image2video' || mode === 'firstlast') ? '' : 'none';
+  $('lastFrameField').style.display = mode === 'firstlast' ? '' : 'none';
+  $('refField').style.display = mode === 'reference' ? '' : 'none';
+  $('videoUrlField').style.display = (mode === 'edit' || mode === 'extend') ? '' : 'none';
+  $('draftField').style.display = mode === 'draft' ? '' : 'none';
+  $('seedField').style.display = model && model.seed === false ? 'none' : '';
+  // 按模型能力显示/隐藏：不支持音频 / 不返回尾帧 / 不支持水印的模型不显示对应开关
+  if ($('audioLabel')) $('audioLabel').style.display = model && model.audio === false ? 'none' : '';
+  if ($('returnLastFrameLabel')) $('returnLastFrameLabel').style.display = model && model.returnLastFrame === false ? 'none' : '';
+  if ($('watermarkLabel')) $('watermarkLabel').style.display = model && model.watermark === false ? 'none' : '';
+  if (model && model.watermark === false && $('watermark')) $('watermark').checked = false;
+  if (model && model.audio === false && $('generateAudio')) $('generateAudio').checked = false;
+  if (model && model.returnLastFrame === false && $('returnLastFrame')) $('returnLastFrame').checked = false;
+  $('cameraFixedLabel').style.display = model && model.cameraFixed ? '' : 'none';
+  $('capturedFrameField').style.display = state.capturedFrame ? '' : 'none';
+  if (state.capturedFrame) $('capturedFrameName').textContent = state.capturedFrameName || T('form.capturedFrame');
+}
+
+/** 历史列表幂等渲染：内容没变就不重绘（避免面板周期性闪烁）。 */
+function setHistoryHtml(html) {
+  const root = $('history');
+  if (!root) return;
+  if (state.lastHistoryHtml === html) return;
+  state.lastHistoryHtml = html;
+  root.innerHTML = html;
+}
+
+function renderHistory() {
+  const root = $('history');
+  try {
+    const titleEl = document.querySelector('.history-panel h2');
+    if (titleEl) titleEl.textContent = state.allSessions ? T('history.titleAll') : T('history.title');
+  } catch (error) { /* 标题更新失败不影响列表 */ }
+  if (state.historyLoading && !state.records.length) {
+    setHistoryHtml('<div class="history-skeleton"><div class="thumb"></div><div class="body"><div class="skeleton" style="width:60%"></div><div class="skeleton" style="width:85%"></div><div class="skeleton" style="width:40%"></div></div></div>');
+    return;
+  }
+  if (!state.records.length) {
+    setHistoryHtml('<div class="empty"><span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5L10 9.5z"/></svg></span>' + esc(T('history.empty')) + '</div>');
+    return;
+  }
+  setHistoryHtml('<div class="history-grid">' + state.records.map((record) => {
+    const status = record.status;
+    const mediaBase = API + '/media?id=' + encodeURIComponent(record.id);
+    const tokenSuffix = state.token ? '&token=' + encodeURIComponent(state.token) : '';
+    const poster = status === 'succeeded' || status === 'running'
+      ? '<img src="' + mediaBase + '&kind=poster' + tokenSuffix + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling&&(this.nextElementSibling.style.display=\'flex\')">'
+      : '';
+    const progress = status === 'running' || status === 'queued'
+      ? '<div class="progress"><i style="width:' + Math.max(4, Math.min(100, Number(record.progress) || 0)) + '%"></i></div>'
+      : '';
+    const canDraftFinal = status === 'succeeded' && record.mode === 'draft' && !!record.remoteTaskId;
+    const actions = [];
+    if (status === 'succeeded') {
+      actions.push('<button class="small" data-action="play" data-id="' + esc(record.id) + '">' + esc(T('history.play')) + '</button>');
+      actions.push('<a style="text-decoration:none" href="' + mediaBase + '&kind=video' + tokenSuffix + '" download="' + esc(record.id) + '.mp4"><button class="small ghost">' + esc(T('history.download')) + '</button></a>');
+    }
+    actions.push('<button class="small ghost" data-action="recreate" data-id="' + esc(record.id) + '">' + esc(T('history.recreate')) + '</button>');
+    if (canDraftFinal) actions.push('<button class="small primary" data-action="draft-final" data-id="' + esc(record.id) + '">' + esc(T('history.draftFinal')) + '</button>');
+    if (status === 'succeeded') actions.push('<button class="small ghost" data-action="copy-link" data-id="' + esc(record.id) + '">' + esc(T('history.copyLink')) + '</button>');
+    if (PANEL) actions.push('<button class="small ghost" data-action="chat-send" data-id="' + esc(record.id) + '">' + esc(T('history.chatSend')) + '</button>');
+    if (status === 'queued' || status === 'running') actions.push('<button class="small ghost" data-action="cancel" data-id="' + esc(record.id) + '">' + esc(T('history.cancel')) + '</button>');
+    actions.push('<button class="small danger" data-action="delete" data-id="' + esc(record.id) + '">' + esc(T('history.delete')) + '</button>');
+    return '<div class="history-card" data-record-id="' + esc(record.id) + '" role="button" tabindex="0">' +
+      '<div class="thumb">' + poster + '<div class="ph" style="display:' + (poster ? 'none' : 'flex') + '">🎞</div></div>' +
+      '<div class="card-body">' +
+        '<div class="card-top"><span class="badge ' + statusClass(status) + '">' + ((status === 'running' || status === 'queued') ? '<span class="pulse-dot"></span>' : '') + esc(statusLabel(status)) + '</span><span class="meta">' + esc(record.model || '') + ' · ' + fmtTime(record.createdAt) + '</span></div>' +
+        '<div class="prompt-line" title="' + esc(record.prompt || '') + '">' + esc(record.prompt || '') + '</div>' +
+        progress +
+        '<div class="card-actions">' + actions.join('') + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('') + '</div>');
+}
+
+/** History record detail drawer: full prompt, params, status and actions. */
+function openHistoryDetail(recordId) {
+  const record = state.records.find((item) => item.id === recordId);
+  if (!record) return;
+  const root = $('modal-root');
+  if (!root) return;
+  const status = record.status;
+  const params = (record.params && typeof record.params === 'object') ? record.params : {};
+  const mediaBase = API + '/media?id=' + encodeURIComponent(record.id);
+  const tokenSuffix = state.token ? '&token=' + encodeURIComponent(state.token) : '';
+  const rows = [];
+  rows.push([T('history.detailStatus'), statusLabel(status)]);
+  rows.push([T('form.model'), record.model || '']);
+  rows.push([T('form.mode'), record.mode || '']);
+  rows.push([T('history.detailCreated'), fmtTime(record.createdAt)]);
+  if (record.updatedAt) rows.push([T('history.detailUpdated'), fmtTime(record.updatedAt)]);
+  rows.push([T('form.resolution'), record.resolution || params.resolution || '']);
+  rows.push([T('form.ratio'), record.ratio || params.ratio || '']);
+  rows.push([T('history.detailDuration'), (record.duration || params.duration || '') ? String(record.duration || params.duration) + ' 秒' : '']);
+  rows.push([T('history.detailSeed'), record.seed !== undefined && record.seed !== null ? String(record.seed) : (params.seed !== undefined ? String(params.seed) : '')]);
+  rows.push([T('history.detailAudio'), record.generateAudio || params.generateAudio ? '是' : '否']);
+  rows.push([T('history.detailLastFrame'), record.returnLastFrame || params.returnLastFrame ? '返回' : '不返回']);
+  rows.push([T('history.detailTask'), record.remoteTaskId || record.requestId || record.id]);
+  const paramRows = rows.filter((item) => item[1] !== undefined && item[1] !== null && String(item[1]) !== '').map((item) => '<div class="detail-kv"><span class="k">' + esc(item[0]) + '</span><span>' + esc(String(item[1])) + '</span></div>').join('');
+  const progress = status === 'running' || status === 'queued'
+    ? '<div class="progress" style="margin-top:6px"><i style="width:' + Math.max(4, Math.min(100, Number(record.progress) || 0)) + '%"></i></div><div class="hint">' + esc(T('history.detailProgress')) + '：' + (Number(record.progress) || 0) + '%</div>'
+    : '';
+  const posterUrl = (status === 'succeeded' || status === 'running') ? mediaBase + '&kind=poster' + tokenSuffix : '';
+  const videoUrl = status === 'succeeded' ? mediaBase + '&kind=video' + tokenSuffix : '';
+  const preview = videoUrl
+    ? '<div class="detail-video-wrap"><video class="detail-video" controls preload="metadata" playsinline src="' + esc(videoUrl) + '"></video></div>'
+    : (posterUrl
+      ? '<div class="detail-media"><img src="' + esc(posterUrl) + '" alt="' + esc(T('history.detailVideo')) + '" onerror="this.style.display=\'none\'"></div>'
+      : '');
+  const actions = [];
+  if (status === 'succeeded') {
+    actions.push('<button class="small" data-action="play" data-id="' + esc(record.id) + '">' + esc(T('history.play')) + '</button>');
+    actions.push('<a href="' + mediaBase + '&kind=video' + tokenSuffix + '" download="' + esc(record.id) + '.mp4"><button class="small ghost">' + esc(T('history.download')) + '</button></a>');
+  }
+  actions.push('<button class="small ghost" data-action="recreate" data-id="' + esc(record.id) + '">' + esc(T('history.recreate')) + '</button>');
+  if (status === 'succeeded' && record.mode === 'draft' && record.remoteTaskId) actions.push('<button class="small primary" data-action="draft-final" data-id="' + esc(record.id) + '">' + esc(T('history.draftFinal')) + '</button>');
+  if (status === 'succeeded') actions.push('<button class="small ghost" data-action="copy-link" data-id="' + esc(record.id) + '">' + esc(T('history.copyLink')) + '</button>');
+  if (PANEL) actions.push('<button class="small ghost" data-action="chat-send" data-id="' + esc(record.id) + '">' + esc(T('history.chatSend')) + '</button>');
+  if (status === 'queued' || status === 'running') actions.push('<button class="small ghost" data-action="cancel" data-id="' + esc(record.id) + '">' + esc(T('history.cancel')) + '</button>');
+  actions.push('<button class="small danger" data-action="delete" data-id="' + esc(record.id) + '">' + esc(T('history.delete')) + '</button>');
+  root.innerHTML = '<div class="detail-backdrop"><div class="detail-panel">' +
+    '<div class="row" style="position:sticky;top:-18px;background:var(--panel);padding:8px 0 12px;margin:-8px 0 0;z-index:2;border-bottom:1px solid var(--border)"><div class="modal-title">' + esc(T('history.detailTitle')) + '</div><span style="flex:1"></span><button class="ghost" data-hd-close="1">' + esc(T('common.close')) + '</button></div>' +
+    '<div class="hint" style="word-break:break-all">' + esc(record.id) + '</div>' +
+    preview + progress +
+    '<div class="detail-section-title">' + esc(T('history.detailPrompt')) + '</div>' +
+    '<div class="detail-prompt collapsed" data-prompt-body="1">' + esc(record.prompt || '（空）') + '</div>' +
+    '<div><button class="small ghost" data-prompt-toggle="1">' + esc(T('history.promptExpand')) + '</button></div>' +
+    '<div class="detail-section-title">' + esc(T('history.detailParams')) + '</div>' +
+    '<div class="detail-kv-list">' + paramRows + '</div>' +
+    '<div class="detail-section-title">' + esc(T('history.detailActions')) + '</div>' +
+    '<div class="card-actions">' + actions.join('') + '</div>' +
+  '</div></div>';
+}
+
+function closeHistoryDetail() {
+  const root = $('modal-root');
+  if (root) root.innerHTML = '';
+}
+
+async function loadConfig() {
+  state.config = await api('GET', API + '/config');
+  renderModeBadge();
+  renderModelOptions();
+  renderModeOptions();
+  renderParamOptions();
+}
+
+async function loadSettings() {
+  const value = await api('GET', API + '/settings');
+  state.settings = value.settings;
+  renderModeBadge();
+  renderModelOptions();
+}
+
+async function loadHistory() {
+  state.historyLoading = true;
+  if (state.records.length === 0) renderHistory();
+  try {
+    const historyUrl = state.allSessions ? API + '/history?limit=50' : API + '/history?sessionId=' + encodeURIComponent(state.sessionId) + '&limit=50';
+    const value = await api('GET', historyUrl);
+    state.records = value.records || [];
+  } finally {
+    state.historyLoading = false;
+  }
+  renderHistory();
+}
+
+function buildGenerateBody() {
+  const prompt = $('prompt').value.trim();
+  if (!prompt) throw new Error(T('error.promptRequired'));
+  const mode = $('mode').value;
+  const model = $('model').value;
+  const params = {
+    resolution: mode === 'draft' ? '480p' : $('resolution').value,
+    ratio: $('ratio').value,
+    duration: Number($('duration').value),
+    generateAudio: $('generateAudio').checked,
+    watermark: $('watermark').checked,
+    returnLastFrame: $('returnLastFrame').checked
+  };
+  const seedRaw = String($('seed').value || '').trim();
+  if (seedRaw) {
+    const seed = Number(seedRaw);
+    if (!Number.isFinite(seed) || seed < 0) throw new Error('seed 需要是非负整数');
+    params.seed = Math.floor(seed);
+  }
+  if ($('cameraFixed').checked) params.cameraFixed = true;
+  const inputs = {};
+  const images = [];
+  const first = $('firstFrameUrl').value.trim();
+  const last = $('lastFrameUrl').value.trim();
+  const firstLocal = state.capturedFrame || state.localFirst || '';
+  const lastLocal = state.localLast || '';
+  if (mode === 'image2video') {
+    if (firstLocal) images.push({ role: 'first_frame', dataUrl: firstLocal });
+    else if (first) images.push({ role: 'first_frame', url: first });
+  }
+  if (mode === 'firstlast') {
+    if (firstLocal) images.push({ role: 'first_frame', dataUrl: firstLocal });
+    else if (first) images.push({ role: 'first_frame', url: first });
+    if (lastLocal) images.push({ role: 'last_frame', dataUrl: lastLocal });
+    else if (last) images.push({ role: 'last_frame', url: last });
+  }
+  if (mode === 'reference') {
+    for (const line of $('refUrls').value.split('\n')) {
+      const url = line.trim();
+      if (url) images.push({ role: 'reference_image', url });
+    }
+    for (const dataUrl of state.localRefs || []) images.push({ role: 'reference_image', dataUrl });
+    const refVideo = $('videoUrl').value.trim();
+    if (refVideo) inputs.video = { url: refVideo };
+  }
+  if ((mode === 'edit' || mode === 'extend')) {
+    const editVideo = $('videoUrl').value.trim();
+    if (!editVideo) throw new Error(T('form.videoUploadRequired'));
+    inputs.video = { url: editVideo };
+  }
+  if (images.length) inputs.images = images;
+  const body = { sessionId: state.sessionId || 'default', prompt, model, mode, params };
+  if (Object.keys(inputs).length) body.inputs = inputs;
+  return body;
+}
+
+async function submit() {
+  const button = $('btnSubmit');
+  button.disabled = true;
+  try {
+    if (state.recreateSourceId) {
+      const body = buildGenerateBody();
+      await api('POST', API + '/recreate', {
+        sessionId: state.sessionId || 'default',
+        sourceId: state.recreateSourceId,
+        prompt: body.prompt,
+        model: body.model,
+        mode: body.mode,
+        params: body.params
+      });
+      toast(T('toast.recreated'), 'ok');
+      state.recreateSourceId = null;
+      updateRecreateHint();
+      await loadHistory();
+    } else {
+      const body = buildGenerateBody();
+      await api('POST', API + '/generate', body);
+      toast(T('toast.created'), 'ok');
+      await loadHistory();
+    }
+  } catch (error) {
+    toast(error.message || String(error), 'err');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function updateRecreateHint() {
+  const hint = $('recreateHint');
+  if (state.recreateSourceId) {
+    hint.classList.add('show');
+    $('recreateText').textContent = T('recreate.hint', { id: state.recreateSourceId });
+    $('btnSubmit').textContent = T('form.submitRecreate');
+  } else {
+    hint.classList.remove('show');
+    $('btnSubmit').textContent = T('form.submit');
+  }
+}
+
+async function startRecreate(id) {
+  const record = state.records.find((item) => item.id === id);
+  if (!record) return;
+  try {
+    const historyUrl = state.allSessions ? API + '/history?limit=50' : API + '/history?sessionId=' + encodeURIComponent(state.sessionId) + '&limit=50';
+    const value = await api('GET', historyUrl);
+    const found = (value.records || []).find((item) => item.id === id) || record;
+    state.recreateSourceId = id;
+    $('prompt').value = found.prompt || '';
+    $('promptCount').textContent = String(($('prompt').value || '').length) + ' / 20000';
+    if (found.model) $('model').value = found.model;
+    renderParamOptions();
+    if (found.mode) $('mode').value = found.mode;
+    updateModeFields();
+    updateRecreateHint();
+    toast(T('toast.recreateLoaded'), 'ok');
+  } catch (error) {
+    toast(error.message || String(error), 'err');
+  }
+}
+
+function mediaUrl(id, kind) {
+  return API + '/media?id=' + encodeURIComponent(id) + '&kind=' + kind + (state.token ? '&token=' + encodeURIComponent(state.token) : '');
+}
+
+function captureFrameDataUrl(video, time) {
+  return new Promise((resolve, reject) => {
+    if (!video) { reject(new Error(T('player.notReady'))); return; }
+    const grab = () => {
+      try {
+        const width = video.videoWidth || 0;
+        const height = video.videoHeight || 0;
+        if (!width || !height) throw new Error(T('player.notLoaded'));
+        const scale = Math.min(1, 1280 / Math.max(width, height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(width * scale));
+        canvas.height = Math.max(1, Math.round(height * scale));
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.9));
+      } catch (error) {
+        reject(error);
+      }
+    };
+    const target = Math.max(0, Number(time) || 0);
+    if (Math.abs((video.currentTime || 0) - target) < 0.2) { grab(); return; }
+    const onSeeked = () => { video.removeEventListener('seeked', onSeeked); grab(); };
+    video.addEventListener('seeked', onSeeked);
+    try { video.currentTime = target; } catch (error) { video.removeEventListener('seeked', onSeeked); reject(error); }
+  });
+}
+
+async function openPlayer(id) {
+  const record = state.records.find((item) => item.id === id);
+  $('modal-root').innerHTML = '<div class="backdrop" data-close="1"><div class="modal" style="max-width:820px;width:min(92vw,820px)"><h3>' + esc(T('player.title', { id })) + '</h3>' +
+    '<video id="playerVideo" controls autoplay playsinline style="width:100%;max-height:52vh;background:#000;border-radius:8px" src="' + mediaUrl(id, 'video') + '"></video>' +
+    '<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">' +
+      '<button class="small ghost" data-frame="0">' + esc(T('player.captureFirst')) + '</button>' +
+      '<button class="small ghost" data-frame="current">' + esc(T('player.captureCurrent')) + '</button>' +
+      '<button class="small ghost" data-frame="last">' + esc(T('player.captureLast')) + '</button>' +
+      '<button class="small ghost" data-action="copy-link" data-id="' + esc(id) + '">' + esc(T('history.copyLink')) + '</button>' +
+      '<button class="small primary" data-action="recreate" data-id="' + esc(id) + '">' + esc(T('player.recreate')) + '</button>' +
+      '<span class="spacer"></span>' +
+      '<button class="ghost" data-close="1">' + esc(T('common.close')) + '</button>' +
+    '</div>' +
+    '<div id="framePreview" class="hint" style="margin-top:8px">' + esc(T('player.frameHint')) + '</div>' +
+    '</div></div>';
+  const video = $('playerVideo');
+  const preview = $('framePreview');
+  $('modal-root').onclick = async (event) => {
+    const button = event.target instanceof Element ? event.target.closest('[data-frame]') : null;
+    if (!button) return;
+    const which = button.getAttribute('data-frame');
+    try {
+      const time = which === 'current' ? (video.currentTime || 0) : which === 'last' ? Math.max(0, (video.duration || 0) - 0.12) : 0;
+      const dataUrl = await captureFrameDataUrl(video, time);
+      state.capturedFrame = dataUrl;
+      state.capturedFrameName = which === 'last' ? T('player.captureLast') : which === 'current' ? T('player.captureCurrent') : T('player.captureFirst');
+      preview.innerHTML = '<div style="display:flex;gap:10px;align-items:center"><img src="' + dataUrl + '" style="height:64px;border-radius:6px;border:1px solid var(--border)" alt=""> <span>' + esc(T('form.capturedFrame')) + ' · ' + esc(state.capturedFrameName) + '</span></div>';
+      toast(T('form.capturedFrame') + ' ✓', 'ok');
+      updateModeFields();
+    } catch (error) {
+      toast(error.message || String(error), 'err');
+    }
+  };
+}
+
+async function draftFinal(id) {
+  const record = state.records.find((item) => item.id === id);
+  if (!record || !record.remoteTaskId) { toast(T('toast.draftFinalMissing'), 'err'); return; }
+  try {
+    await api('POST', API + '/generate', {
+      sessionId: (record && record.sessionId) || state.sessionId || 'default',
+      model: record.model,
+      mode: 'draft-final',
+      draftTaskId: record.remoteTaskId,
+      params: { resolution: '1080p', watermark: !!(record.params && record.params.watermark) }
+    });
+    toast(T('toast.draftFinalCreated'), 'ok');
+    await loadHistory();
+  } catch (error) {
+    toast(error.message || String(error), 'err');
+  }
+}
+
+function sendToHost(type, payload) {
+  if (!PANEL) return false;
+  try { parent.postMessage(Object.assign({ type }, payload || {}), '*'); return true; } catch (error) { return false; }
+}
+
+async function copyVideoLink(id) {
+  const url = mediaUrl(id, 'video');
+  try {
+    await navigator.clipboard.writeText(url);
+    toast(T('history.copied'), 'ok');
+  } catch (error) {
+    window.prompt(T('history.copyLink'), url);
+  }
+}
+
+async function removeRecord(id) {
+  if (!window.confirm(T('confirm.delete'))) return;
+  try {
+    const record = state.records.find((item) => item.id === id);
+    await api('POST', API + '/delete', { sessionId: (record && record.sessionId) || state.sessionId || 'default', id });
+    toast(T('toast.deleted'), 'ok');
+    await loadHistory();
+  } catch (error) {
+    toast(error.message || String(error), 'err');
+  }
+}
+
+async function cancelRecord(id) {
+  try {
+    const record = state.records.find((item) => item.id === id);
+    await api('POST', API + '/cancel', { sessionId: (record && record.sessionId) || state.sessionId || 'default', id });
+    toast(T('toast.cancelled'), 'ok');
+    await loadHistory();
+  } catch (error) {
+    toast(error.message || String(error), 'err');
+  }
+}
+
+const PROVIDER_OPTIONS = ['auto', 'ark', 'relay', 'demo'];
+
+function readImageFile(file) {
+  return new Promise((resolve, reject) => {
+    try {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(reader.error || new Error('读取图片失败'));
+      reader.readAsDataURL(file);
+    } catch (error) { reject(error); }
+  });
+}
+
+function setImagePreview(which, dataUrl) {
+  const img = $(which === 'first' ? 'previewFirst' : 'previewLast');
+  const nameEl = $(which === 'first' ? 'firstLocalName' : 'lastLocalName');
+  const clearBtn = $(which === 'first' ? 'btnClearFirst' : 'btnClearLast');
+  if (!img) return;
+  if (dataUrl) {
+    img.src = dataUrl;
+    img.style.display = 'block';
+    if (clearBtn) clearBtn.style.display = '';
+    if (nameEl) nameEl.textContent = '本地图片已选择';
+  } else {
+    img.removeAttribute('src');
+    img.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'none';
+    if (nameEl) nameEl.textContent = '';
+  }
+}
+
+function renderRefPreviews() {
+  const el = $('previewRefs');
+  const nameEl = $('refLocalName');
+  const clearBtn = $('btnClearRefs');
+  if (!el) return;
+  el.innerHTML = (state.localRefs || []).map((dataUrl, index) =>
+    '<span style="position:relative"><img src="' + dataUrl + '" style="height:40px;border-radius:6px;border:1px solid var(--border)" alt="">' +
+    '<button type="button" class="sd-chip-x" data-ref-remove="' + index + '" title="移除" style="position:absolute;top:-6px;right:-6px;background:var(--panel-2);border-radius:999px">×</button></span>'
+  ).join('');
+  if (nameEl) nameEl.textContent = (state.localRefs || []).length ? '已选 ' + state.localRefs.length + ' 张本地图片' : '';
+  if (clearBtn) clearBtn.style.display = (state.localRefs || []).length ? '' : 'none';
+}
+
+function openHistoryVideoPicker() {
+  const list = state.records.filter((record) => record.status === 'succeeded' && record.remoteVideoUrl);
+  $('modal-root').innerHTML = '<div class="backdrop" data-close="1"><div class="modal"><h3>从历史视频选择</h3>' +
+    (list.length
+      ? '<div style="max-height:50vh;overflow:auto">' + list.map((record) =>
+          '<button type="button" class="sd-select-option" data-history-video="' + esc(record.remoteVideoUrl) + '" style="border:1px solid var(--border);margin-bottom:6px;width:100%;text-align:left">' +
+            esc((record.prompt || record.id).slice(0, 60)) + ' <span class="hint">· ' + esc(fmtTime(record.createdAt)) + '</span></button>').join('') + '</div>'
+      : '<p class="hint">暂无已生成的视频（先用文生视频生成一个，再回来选择）</p>') +
+    '<div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="ghost" data-close="1">关闭</button></div></div></div>';
+}
+
+async function fetchRelayModels() {
+  const statusEl = $('relayProbeStatus');
+  if (!statusEl) return;
+  statusEl.textContent = T('settings.relayFetching');
+  try {
+    const baseUrl = $('setRelayBase').value.trim();
+    const apiKey = $('setRelayKey').value.trim();
+    const value = await api('POST', API + '/relay/models', {
+      baseUrl: baseUrl || undefined,
+      apiKey: apiKey || undefined,
+      protocol: 'ark'
+    });
+    const models = Array.isArray(value.models)
+      ? value.models.map((item) => ({ id: String(item && item.id || ''), label: String(item && item.label || item && item.id || '') })).filter((item) => item.id)
+      : [];
+    state.relayPool = models;
+    statusEl.textContent = T('settings.relayFetchOk', { count: models.length }) + (value.latencyMs ? ' · ' + value.latencyMs + 'ms' : '');
+    renderRelayModels();
+  } catch (error) {
+    statusEl.textContent = error.message || String(error);
+    toast(error.message || String(error), 'err');
+  }
+}
+
+function renderRelayModels() {
+  const poolEl = $('relayModelsPool');
+  const selectedEl = $('relayModelsSelected');
+  const labelEl = $('relaySelectedLabel');
+  if (!poolEl || !selectedEl) return;
+  const enabled = state.relayModels || [];
+  const ids = new Set(enabled.map((item) => item.id));
+  const pool = state.relayPool || [];
+  poolEl.innerHTML = pool.length
+    ? pool.map((item) => '<button type="button" class="sd-chip' + (ids.has(item.id) ? ' on' : '') + '" data-model-id="' + esc(item.id) + '">' + (ids.has(item.id) ? '✓ ' : '') + esc(item.label || item.id) + '</button>').join('')
+    : '<span class="hint">' + esc(T('settings.relayModelsEmpty')) + '</span>';
+  if (labelEl) labelEl.textContent = enabled.length ? T('settings.relaySelected', { count: enabled.length }) : T('settings.relayNone');
+  selectedEl.innerHTML = enabled.map((item) => '<span class="sd-chip on">' + esc(item.label || item.id) + ' <button type="button" class="sd-chip-x" data-remove-id="' + esc(item.id) + '" title="remove">×</button></span>').join('');
+}
+
+const PROVIDER_LABELS = { auto: 'auto', ark: 'Ark（方舟）', relay: 'Relay（中转站）', demo: 'Demo（演示）' };
+
+function setProviderValue(value) {
+  const hidden = $('setProvider');
+  const button = $('setProviderBtn');
+  if (!hidden || !button) return;
+  const option = $('setProviderList') && $('setProviderList').querySelector('[data-value="' + String(value).replace(/"/g, '') + '"]');
+  hidden.value = value;
+  button.textContent = option ? option.textContent : value;
+  const list = $('setProviderList');
+  if (list) list.style.display = 'none';
+}
+
+function toggleProviderList(force) {
+  const list = $('setProviderList');
+  const button = $('setProviderBtn');
+  if (!list || !button) return;
+  const open = typeof force === 'boolean' ? force : list.style.display === 'none';
+  list.style.display = open ? 'block' : 'none';
+  button.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function openSettings() {
+  const settings = state.settings || {};
+  const isCodex = PANEL && PANEL.platform === 'codex';
+  const providers = isCodex ? ['ark', 'relay', 'demo'] : PROVIDER_OPTIONS;
+  const optionHtml = providers.map((value) => option(value, value === 'auto' ? T('settings.providerAuto') : (PROVIDER_LABELS[value] || value))).join('');
+  const inheritBlock = isCodex
+    ? '<div class="field"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setInheritDsh" style="width:auto"' + (settings.inheritDsh ? ' checked' : '') + '> ' + esc('从 DSH 共享配置继承 Provider / Base URL / Key（只读回退；Codex 不保存密钥副本）') + '</label>' +
+      (settings.inheritedFrom === 'dsh' ? '<div class="hint" style="margin-top:4px">当前显示的是从 DSH 继承的配置；在此保存后 Codex 侧设置优先。</div>' : '') +
+      '</div>'
+    : '';
+  $('modal-root').innerHTML = '<div class="backdrop" data-close="1"><div class="modal"><h3>' + esc(T('settings.title')) + '</h3>' +
+    '<div class="field"><label>' + esc(T('settings.provider')) + '</label>' +
+      '<div class="sd-select" id="setProviderDropdown">' +
+        '<button type="button" class="sd-select-btn" id="setProviderBtn" aria-haspopup="listbox" aria-expanded="false">' + esc(providers[0]) + '</button>' +
+        '<input type="hidden" id="setProvider" value="' + esc(providers[0]) + '">' +
+        '<div class="sd-select-list" id="setProviderList" role="listbox">' +
+          providers.map((value) => '<button type="button" class="sd-select-option" data-value="' + esc(value) + '">' + esc(value === 'auto' ? T('settings.providerAuto') : (PROVIDER_LABELS[value] || value)) + '</button>').join('') +
+        '</div>' +
+      '</div></div>' +
+    inheritBlock +
+    '<div class="field"><label>' + esc(T('settings.arkKey')) + '</label><input id="setArkKey" type="password" placeholder="' + esc(settings.keys && settings.keys.ark ? settings.keys.ark : T('settings.unset')) + '"></div>' +
+    '<div class="field"><label>' + esc(T('settings.arkBase')) + '</label><input id="setArkBase" placeholder="' + esc(settings.arkBaseUrl || 'https://ark.cn-beijing.volces.com') + '"></div>' +
+    '<div class="field"><label>' + esc(T('settings.relayBase')) + '</label><input id="setRelayBase" placeholder="' + esc(settings.relayBaseUrl || '') + '"></div>' +
+    '<div class="field"><label>' + esc(T('settings.relayKey')) + '</label><input id="setRelayKey" type="password" placeholder="' + esc(settings.keys && settings.keys.relay ? settings.keys.relay : T('settings.unset')) + '"></div>' +
+    '<div class="field"><label>' + esc(T('settings.defaultModel')) + '</label><input id="setDefaultModel" placeholder="' + esc(settings.defaultModel || '') + '"></div>' +
+    (isCodex ? '' :
+      '<div class="field"><label>' + esc(T('settings.relayModelsTitle')) + '</label>' +
+        '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button type="button" class="ghost" id="btnFetchRelayModels">' + esc(T('settings.relayFetch')) + '</button><span id="relayProbeStatus" class="hint"></span></div>' +
+        '<div id="relayModelsPool" class="sd-chips"></div>' +
+        '<div style="margin-top:8px" class="hint" id="relaySelectedLabel"></div>' +
+        '<div id="relayModelsSelected" class="sd-chips"></div>' +
+      '</div>') +
+    '<p class="hint">' + esc(T('settings.hint')) + '</p>' +
+    '<div style="display:flex;gap:10px;justify-content:flex-end"><button class="ghost" data-close="1">' + esc(T('common.cancel')) + '</button><button class="primary" id="btnSaveSettings">' + esc(T('common.save')) + '</button></div>' +
+    '</div></div>';
+  if (settings.provider) setProviderValue(settings.provider);
+  if (isCodex && !['ark', 'relay', 'demo'].includes(settings.provider)) setProviderValue('demo');
+  state.relayPool = [];
+  state.relayModels = Array.isArray(settings.relayModels)
+    ? settings.relayModels.map((item) => ({ id: String(item && item.id || ''), label: String(item && item.label || item && item.id || '') })).filter((item) => item.id)
+    : [];
+  renderRelayModels();
+  if ($('btnFetchRelayModels')) $('btnFetchRelayModels').onclick = fetchRelayModels;
+  $('modal-root').onclick = function (event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const removeButton = target.closest('[data-remove-id]');
+    if (removeButton) {
+      const id = removeButton.getAttribute('data-remove-id');
+      state.relayModels = state.relayModels.filter((item) => item.id !== id);
+      renderRelayModels();
+      return;
+    }
+    const chip = target.closest('[data-model-id]');
+    if (chip && chip.closest('#relayModelsPool')) {
+      const id = chip.getAttribute('data-model-id');
+      const found = (state.relayPool || []).find((item) => item.id === id);
+      if (!found) return;
+      const exists = state.relayModels.some((item) => item.id === id);
+      state.relayModels = exists ? state.relayModels.filter((item) => item.id !== id) : state.relayModels.concat([{ id: found.id, label: found.label || found.id }]);
+      renderRelayModels();
+    }
+  };
+  $('btnSaveSettings').onclick = saveSettings;
+}
+
+async function saveSettings() {
+  const patch = {};
+  const provider = $('setProvider').value;
+  if (provider) patch.provider = provider;
+  if ($('setInheritDsh')) patch.inheritDsh = $('setInheritDsh').checked;
+  const arkKey = $('setArkKey').value.trim();
+  if (arkKey) patch.ARK_API_KEY = arkKey;
+  const arkBase = $('setArkBase').value.trim();
+  if (arkBase) patch.ARK_BASE_URL = arkBase;
+  const relayBase = $('setRelayBase').value.trim();
+  if (relayBase) patch.RELAY_BASE_URL = relayBase;
+  const relayKey = $('setRelayKey').value.trim();
+  if (relayKey) patch.RELAY_API_KEY = relayKey;
+  const defaultModel = $('setDefaultModel').value.trim();
+  if (defaultModel) patch.DEFAULT_MODEL = defaultModel;
+  // 中转站模型清单只在 DSH/Web 平台保存（Codex 独立存储不支持该字段）
+  if (!(PANEL && PANEL.platform === 'codex')) {
+    patch.relayModels = state.relayModels && state.relayModels.length ? JSON.stringify(state.relayModels) : '';
+  }
+  try {
+    await api('POST', API + '/settings', { patch });
+    toast(T('toast.settingsSaved'), 'ok');
+    $('modal-root').innerHTML = '';
+    await Promise.all([loadConfig(), loadSettings()]);
+  } catch (error) {
+    toast(error.message || String(error), 'err');
+  }
+}
+
+function startPolling() {
+  setInterval(async () => {
+    if (document.hidden) return;
+    // 只有存在「排队中/生成中」任务时才轮询刷新；全部终态时避免无意义重绘（面板会闪）
+    const hasActive = Array.isArray(state.records) && state.records.some((record) => record && (record.status === 'queued' || record.status === 'running'));
+    if (!hasActive) return;
+    try { await loadHistory(); } catch (error) { /* 网络抖动忽略 */ }
+  }, 2500);
+}
+
+document.addEventListener('click', (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  const close = target.closest('[data-close]');
+  if (close) {
+    // 只有点击 data-close 元素本身、或弹窗外的 backdrop 空白才关闭；
+    // 弹窗内的控件（下拉框/输入框等）点击不能被误判成关闭。
+    if (close === target || !target.closest('.modal')) $('modal-root').innerHTML = '';
+    return;
+  }
+  if (target.closest('[data-prompt-toggle]')) {
+    const body = document.querySelector('[data-prompt-body]');
+    const btn = target.closest('[data-prompt-toggle]');
+    if (body) {
+      const collapsed = body.classList.toggle('collapsed');
+      if (btn) btn.textContent = collapsed ? T('history.promptExpand') : T('history.promptCollapse');
+    }
+    return;
+  }
+  if (target.closest('[data-hd-close]')) { closeHistoryDetail(); return; }
+  if (target.closest('.detail-backdrop') && !target.closest('.detail-panel')) { closeHistoryDetail(); return; }
+  const historyCard = target.closest('.history-card[data-record-id]');
+  if (historyCard && !target.closest('button') && !target.closest('a')) {
+    openHistoryDetail(historyCard.getAttribute('data-record-id'));
+    return;
+  }
+  const action = target.getAttribute('data-action');
+  if (!action) return;
+  const id = target.getAttribute('data-id');
+  if (action === 'play') openPlayer(id);
+  else if (action === 'recreate') startRecreate(id);
+  else if (action === 'delete') removeRecord(id);
+  else if (action === 'cancel') cancelRecord(id);
+  else if (action === 'draft-final') draftFinal(id);
+  else if (action === 'copy-link') copyVideoLink(id);
+  else if (action === 'chat-send') {
+    const record = state.records.find((item) => item.id === id);
+    if (record) sendToHost('sd-send-to-chat', { record: { id: record.id, prompt: record.prompt, remoteVideoUrl: record.remoteVideoUrl, remoteTaskId: record.remoteTaskId } });
+  }
+});
+
+$('btnSubmit').addEventListener('click', submit);
+$('btnRefresh').addEventListener('click', () => { loadHistory().then(() => toast(T('toast.refreshed'), 'ok')).catch((error) => toast(error.message, 'err')); });
+$('btnSettings').addEventListener('click', openSettings);
+$('btnLang').addEventListener('click', (event) => {
+  event.stopPropagation();
+  const menu = $('langMenu');
+  if (menu) menu.hidden = !menu.hidden;
+});
+$('langMenu').addEventListener('click', (event) => {
+  const item = event.target.closest('[data-lang]');
+  if (!item) return;
+  const code = item.getAttribute('data-lang');
+  if (code) I18n.setLanguage(code);
+});
+document.addEventListener('click', (event) => {
+  const menu = $('langMenu');
+  if (!menu || menu.hidden) return;
+  if (!event.target.closest('.lang-wrap')) menu.hidden = true;
+});
+$('btnCancelRecreate').addEventListener('click', () => { state.recreateSourceId = null; updateRecreateHint(); });
+$('model').addEventListener('change', () => { renderModeOptions(); renderParamOptions(); });
+$('mode').addEventListener('change', updateModeFields);
+$('prompt').addEventListener('input', () => { $('promptCount').textContent = String($('prompt').value.length) + ' / 20000'; });
+$('btnClearCapturedFrame').addEventListener('click', () => { state.capturedFrame = ''; state.capturedFrameName = ''; updateModeFields(); });
+if ($('btnPickFirst')) $('btnPickFirst').addEventListener('click', () => $('fileFirst').click());
+if ($('fileFirst')) $('fileFirst').addEventListener('change', async () => {
+  const file = $('fileFirst').files && $('fileFirst').files[0];
+  if (!file) return;
+  try { state.localFirst = await readImageFile(file); setImagePreview('first', state.localFirst); }
+  catch (error) { toast(error.message || String(error), 'err'); }
+});
+if ($('btnClearFirst')) $('btnClearFirst').addEventListener('click', () => { state.localFirst = ''; $('fileFirst').value = ''; setImagePreview('first', ''); });
+if ($('btnPickLast')) $('btnPickLast').addEventListener('click', () => $('fileLast').click());
+if ($('fileLast')) $('fileLast').addEventListener('change', async () => {
+  const file = $('fileLast').files && $('fileLast').files[0];
+  if (!file) return;
+  try { state.localLast = await readImageFile(file); setImagePreview('last', state.localLast); }
+  catch (error) { toast(error.message || String(error), 'err'); }
+});
+if ($('btnClearLast')) $('btnClearLast').addEventListener('click', () => { state.localLast = ''; $('fileLast').value = ''; setImagePreview('last', ''); });
+if ($('btnPickRefs')) $('btnPickRefs').addEventListener('click', () => $('fileRefs').click());
+if ($('fileRefs')) $('fileRefs').addEventListener('change', async () => {
+  const files = Array.from($('fileRefs').files || []);
+  if (!files.length) return;
+  try {
+    const dataUrls = [];
+    for (const file of files) dataUrls.push(await readImageFile(file));
+    state.localRefs = (state.localRefs || []).concat(dataUrls).slice(0, 10);
+    renderRefPreviews();
+  } catch (error) { toast(error.message || String(error), 'err'); }
+});
+if ($('btnClearRefs')) $('btnClearRefs').addEventListener('click', () => { state.localRefs = []; $('fileRefs').value = ''; renderRefPreviews(); });
+if ($('btnPickHistoryVideo')) $('btnPickHistoryVideo').addEventListener('click', openHistoryVideoPicker);
+document.addEventListener('click', (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  const removeRef = target.closest('[data-ref-remove]');
+  if (removeRef) {
+    const index = Number(removeRef.getAttribute('data-ref-remove'));
+    if (Number.isInteger(index)) { state.localRefs = (state.localRefs || []).filter((_, i) => i !== index); renderRefPreviews(); }
+    return;
+  }
+  const videoButton = target.closest('[data-history-video]');
+  if (videoButton) {
+    const url = videoButton.getAttribute('data-history-video');
+    if (url) { $('videoUrl').value = url; $('modal-root').innerHTML = ''; toast('已选择历史视频', 'ok'); }
+  }
+});
+document.addEventListener('click', (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  if (target.closest('#setProviderBtn')) { toggleProviderList(); return; }
+  const optionButton = target.closest('.sd-select-option');
+  if (optionButton && optionButton.closest('#setProviderList')) { setProviderValue(optionButton.getAttribute('data-value')); return; }
+  if (!target.closest('#setProviderDropdown')) toggleProviderList(false);
+});
+
+(async function init() {
+  if (PANEL) {
+    const hint = $('formHint');
+    if (hint) {
+      hint.style.display = '';
+      hint.textContent = PANEL.platform === 'dsh'
+        ? '面板运行在 DSH 插件内，与插件共享存储与设置；无 Key 时自动演示模式（不产生费用）。'
+        : '面板运行在宿主内，与插件共享存储；无 Key 时自动演示模式（不产生费用）。';
+    }
+    try { parent.postMessage({ type: 'sd-panel-ready', theme: document.documentElement.dataset.theme || 'dark', lang: I18n.getLanguage(), sessionId: state.sessionId }, '*'); } catch (error) { /* 父窗口不可用时忽略 */ }
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (!data || data.type !== 'sd-panel-host') return;
+      if (data.theme === 'light' || data.theme === 'dark') document.documentElement.dataset.theme = data.theme;
+      if (data.lang && data.lang !== I18n.getLanguage()) I18n.setLanguage(data.lang);
+      if (data.sessionId && !state.allSessions && data.sessionId !== state.sessionId) {
+        state.sessionId = data.sessionId;
+        loadHistory().catch(() => {});
+      }
+    });
+  }
+  $('promptCount').textContent = '0 / 20000';
+  try {
+    // 动态语言包：等待语言清单/字典加载完成（内置中文兜底，失败也能继续）
+    await I18n.ready;
+    renderLangMenu();
+    await loadConfig();
+    await loadSettings();
+    await loadHistory();
+  } catch (error) {
+    toast(T('toast.initFailed') + (error.message || error), 'err');
+    $('modeBadge').textContent = T('badge.connectFailed');
+    $('modeBadge').className = 'badge err';
+  }
+  startPolling();
+})();
+</script>
+</body>
+</html>

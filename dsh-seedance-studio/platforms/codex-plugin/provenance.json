@@ -1,0 +1,101 @@
+{
+  "source_archive": "dsh-video-plugins-2026-11-05.zip",
+  "source_sha256": "1d381f24e9eb4649d6867e14b6cfbc217ae93435b99f67d81d52c0b4bba263e0",
+  "video_project_sha256": {
+    "server/analyze.js": "fdadbb85be7f20c116cf267af426443697fed71a92fc4d07393a1efc2c6a62ac",
+    "server/capabilities.js": "2848a435de78dedcea7a4a67d337c434aa7efa3b2c30d033c01498ac433ed6bb",
+    "server/guide.js": "be16e0f1cd75f0100366416f980c49af055c402fe36a66f0c157abe6fe3affe6",
+    "server/imagegen.js": "820af3f5cca1dda3f214b70eaf81d86b53ee321b928a91183a6499ed5b1af505",
+    "server/projects.js": "2df1c58c89025530a74d1a3b59f54d45c6ea79561dd59cdb96b35fc2e1eb522b",
+    "server/strategy.js": "9408a460bd898b428aa9e1effaa18b2e45679c98661d1545c645d990a1ad3c69",
+    "tool.js": "ef72788be5f402fc4cf31636537acae33b2b44ea155e1c2ff7c33265c6b0a7c1"
+  },
+  "video_project_upstream_archive_sha256": {
+    "server/analyze.js": "9cc0dd06c4f72b4988e43906af6d7eb24b097b019a09caa5ff2e5e5635ef336d",
+    "server/capabilities.js": "2848a435de78dedcea7a4a67d337c434aa7efa3b2c30d033c01498ac433ed6bb",
+    "server/guide.js": "be16e0f1cd75f0100366416f980c49af055c402fe36a66f0c157abe6fe3affe6",
+    "server/imagegen.js": "62fda37601cd1bd2e2894f289d0c45dc00ed918b7fae882ca44f22e7086184a7",
+    "server/projects.js": "20a6a1804fd5cd3fd964cadb7fe36259a6f7d0ab45e2d454802d8a967aa78c31",
+    "server/strategy.js": "9408a460bd898b428aa9e1effaa18b2e45679c98661d1545c645d990a1ad3c69",
+    "tool.js": "51a488dc4872d30fd67a661ba388433cc108bc60c83f81cf1c39d9659f7e7cfe"
+  },
+  "video_project_local_sync": {
+    "date": "2026-11-06",
+    "source": "sibling original video-project project",
+    "sha256": {
+      "server/projects.js": "a836a3f2609bb0aff99f5d3829ac0856b7459351232a872bac40725feca0b2d7",
+      "server/analyze.js": "c4fe4d41b7dde97533fc97c79df5fddc4dc97c82a59b242a14b71e44b5c0fac4",
+      "server/imagegen.js": "820af3f5cca1dda3f214b70eaf81d86b53ee321b928a91183a6499ed5b1af505",
+      "tool.js": "ef72788be5f402fc4cf31636537acae33b2b44ea155e1c2ff7c33265c6b0a7c1"
+    },
+    "codex_adaptations": [
+      "Use injected independent sketch-reference preference; never import DSH image settings",
+      "Validate saved sketch file before offering a reference",
+      "Attach completed sketch only if confirmed shot context is unchanged",
+      "Pass global environment to warnings and both review checklist paths"
+    ]
+  },
+  "legacy_frontend_0_2_2": {
+    "frontend_author": "Gemini UI role (gemini-3.8-flash)",
+    "frontend_delivery": "review",
+    "frontend_receipts": [
+      "70af053e81d74e0aabe56de223998f11",
+      "cd6738d583074ea88f95d5da74e74ca6",
+      "3d8463d702034ae59d9c1bebee64de3f",
+      "f727dcc7ba5e4a368cddf96cef5f0791",
+      "31c930e041564a60a1c182b4c929a0e3",
+      "c2b4d021e3ff45bfb6e101e6a3d56978",
+      "6838ff2a2ebf4655ada5dca2e40c3dfa",
+      "12188766ec11470597112985554467e2",
+      "4c3950a13faf49939ff51030b393ba12"
+    ],
+    "frontend_relocation": "0.2.1 relocated the reviewed native frontend without body edits. 0.2.2 integrates Gemini review-delivery environment and optional sketch-reference changes plus reviewed corrections; Codex applied exact file artifacts and unique replacements.",
+    "frontend_sha256": {
+      "frontend/src/app.js": "21c736f1b15ca0c8da333638122991c6af170dac3feb3edaa972f14e6e91bef5",
+      "frontend/src/index.html": "733e49bef725088638db504f702b3705a4cdfd141466a92040d54d4a19d7ae8b",
+      "frontend/src/media.js": "c8e30882753f0bb22e02eb7644707ec16ea645c668f6e5d93cfa1fef94869430",
+      "frontend/src/sizing.js": "51dca5c7ace44fe4c9b941a281d08c476c8c133bae2569d717fd7d2cd081f63c",
+      "frontend/src/style.css": "bcc0fb03d17ce9a29d7ef3fe56053da859eecc60dac8e233c7e704feb6863071"
+    }
+  },
+  "frontend_layout": "shared-spa-v1",
+  "frontend_source": "platforms/web/public",
+  "frontend_author": "Shared SPA owned by Lead; Codex platform bridge authored by Gemini UI with explicitly authorized Codex integration fixes",
+  "frontend_delivery": "review",
+  "frontend_sha256": {
+    "frontend/bridge.js": "bcd38cfd722735e7db384cb2594754f713b0ee087df6bfaef85677522f70213f",
+    "frontend/media.js": "c8e30882753f0bb22e02eb7644707ec16ea645c668f6e5d93cfa1fef94869430",
+    "frontend/sizing.js": "51dca5c7ace44fe4c9b941a281d08c476c8c133bae2569d717fd7d2cd081f63c"
+  },
+  "shared_spa_sha256": {
+    "index.html": "b0ea69d759d224a77db2489f1e13aacb961342ace070b4c94acf51c5768c3438",
+    "i18n.js": "cea99ebd59c235b7daa07241f07ffb25a0e6ee892d2681ffc25f238cdbeeb16e"
+  },
+  "codex_bridge": {
+    "version": "0.2.3",
+    "worker_role": "gemini-ui",
+    "worker_model": "gemini-3.8-flash",
+    "delivery": "review",
+    "integrated_job_ids": [
+      "27ed82df720946099676d8aa6ec789b8",
+      "6c911c28d04e452084a911f2e897d48d",
+      "ddfc01d9c3d649d8a68a984cdc90edc8",
+      "48181965af424d26bca9f396c018522c"
+    ],
+    "final_worker_response_id": "69fbccb598e941c5a4707da091180575",
+    "final_worker_artifact_sha256": "cca7360427eb8683d1ff5c4fdd09680e3eacb6c374dabdebdc6894d3d4675c0a",
+    "helpers": "media.js and sizing.js moved byte-for-byte from the reviewed 0.2.2 frontend",
+    "codex_integration_authorization": "User explicitly authorized Codex to repair integration defects after review on 2026-11-06",
+    "codex_integration_fixes": [
+      "Remove two accidental standalone BuildConfig tokens from Gemini output",
+      "Handle automatic bootstrap promise rejection while preserving explicit reconnect failure",
+      "Wait for restored preferences before applying SDK context updates and catch event-handler rejections",
+      "Reject malformed ui-state/pending metadata before resolving readiness",
+      "Guard external calls, preference setters, media resolution and old bootstrap failure across lifecycle changes",
+      "Validate opaque media references and clear consumed lifecycle deletion approvals"
+    ],
+    "no_lead_source_edits": true,
+    "source_equality_verification": "Strip injected bridge from panel.html and compare exact inlined shared SPA; hashes in panel-source.json"
+  },
+  "release_status": "Shared-SPA integration candidate; advanced shared editors/theme/layout/copy await Lead migration; existing installation not updated"
+}

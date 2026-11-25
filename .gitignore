@@ -1,0 +1,58 @@
+# ---- 依赖与构建产物 ----
+node_modules/
+dist/
+dist-*/
+build/
+*.zip
+*.sha256
+
+# ---- 本机二进制（体积大，按需下载）----
+# 注意：含斜杠的模式是「相对仓库根」，子目录里的要用 **/ 前缀，否则漏掉
+**/vendor/ffmpeg/*.exe
+**/vendor/ffmpeg/ffmpeg
+**/vendor/ffmpeg/ffprobe
+*.exe
+*.dll
+*.wasm
+
+# ---- 本机配置与密钥（绝不提交）----
+.env
+.env.*
+settings.json
+**/settings.json
+config.json
+**/config.json
+*.pem
+*.key
+*.p12
+.credentials.*
+
+# ---- 生成物与缓存 ----
+*.log
+*.tmp
+*.part
+*.bak
+*.bak-*
+.cache/
+.thumbs/
+coverage/
+.playwright/
+
+# ---- 演示/生成媒体（示例视频保留，生成结果不提交）----
+output/
+seedance-output/
+**/projects/
+*.mp4
+!dsh-seedance-studio/media/demo.mp4
+*.mov
+*.jpg
+*.jpeg
+*.png
+!dsh-seedance-studio/media/demo-lastframe.jpg
+!dsh-seedance-studio/locale/**
+!**/docs/**/*.png
+
+# ---- 系统 ----
+.DS_Store
+Thumbs.db
+desktop.ini

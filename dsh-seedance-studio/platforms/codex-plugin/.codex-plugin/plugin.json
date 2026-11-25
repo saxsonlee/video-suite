@@ -1,0 +1,24 @@
+{
+  "name": "video-studio",
+  "version": "0.2.7",
+  "description": "视频生成、人物卡、分镜、任务历史、抽帧验收与版本管理。",
+  "author": {
+    "name": "Local adaptation"
+  },
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Video Studio for Codex",
+    "shortDescription": "原生视频插件：Codex 内嵌面板、聊天工具、分镜与项目管理。",
+    "longDescription": "由用户提供的 DSH 视频插件改造，独立运行于 Codex。包含持久任务、视频预览、角色与分镜、验收抽帧、版本归档，以及 Windows 凭据管理器密钥存储。默认演示模式明确使用固定样例。真实生成需用户自行配置服务商与精确模型。",
+    "developerName": "Local",
+    "category": "Productivity",
+    "brandColor": "#d78b52",
+    "capabilities": [],
+    "defaultPrompt": [
+      "打开视频工作台",
+      "创建一个视频项目并整理人物卡和分镜",
+      "查看视频生成任务进度"
+    ]
+  }
+}

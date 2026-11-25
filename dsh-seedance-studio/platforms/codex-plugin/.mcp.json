@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "video_studio": {
+      "command": "node",
+      "args": [
+        "platforms/codex-plugin/server/mcp.mjs"
+      ],
+      "startup_timeout_sec": 30,
+      "tool_timeout_sec": 60
+    }
+  }
+}

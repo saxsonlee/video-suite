@@ -1,0 +1,62 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import { chromium } from './dependencies.mjs';
+import { startServer } from '../../platforms/codex-plugin/server/http.mjs';
+import { mountNativePanel } from './native-panel-host.mjs';
+import { readJson } from '../../platforms/codex-plugin/server/util.mjs';
+
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'video-shared-lifecycle-'));
+const server = await startServer({ root, studioOptions: { env: {} } });
+const browser = await chromium.launch({ channel: 'chrome', headless: true });
+try {
+  const page = await browser.newPage({ viewport: { width: 1100, height: 850 } });
+  const errors = []; page.on('pageerror', e => errors.push(e.message));
+  const host = await mountNativePanel(page, server, { hostContext: { locale: 'zh-CN' }, initialHostMessage: { sessionId: 'early-host-session', lang: 'zh', theme: 'dark' }, async beforeCall(params) {
+    if (params.arguments?.path === '/api/seedance/ui-state' && params.arguments.method === 'GET') await new Promise(resolve => setTimeout(resolve, 250));
+  } });
+  const frame = host.frame;
+  assert.equal(await frame.evaluate(() => window.SeedanceHost.getState().sessionId), 'early-host-session');
+  await page.waitForFunction(() => window.nativeSizes.length > 0);
+  assert.ok((await page.evaluate(() => window.nativeSizes)).every(size => size.height > 0 && size.height <= 1000));
+  await frame.locator('#prompt').fill('preserve unsaved host-context input');
+  await page.evaluate(() => window.nativeBridge.setHostContext({ theme: 'light', locale: 'en-US', styles: { variables: { '--color-background-primary': '#eeeeee', '--color-text-primary': '#111111' } } }));
+  await frame.waitForFunction(() => window.SeedanceHost.getState().theme === 'light' && window.SeedanceHost.getState().lang === 'en');
+  assert.equal(await frame.locator('#prompt').inputValue(), 'preserve unsaved host-context input');
+  assert.equal(await frame.evaluate(() => document.documentElement.style.getPropertyValue('--bg')), '#eeeeee');
+  await frame.evaluate(() => window.postMessage({ type: 'sd-panel-host', sessionId: 'untrusted-self' }, '*'));
+  await page.waitForTimeout(100);
+  assert.notEqual(await frame.evaluate(() => window.SeedanceHost.getState().sessionId), 'untrusted-self');
+  await page.evaluate(() => document.querySelector('iframe').contentWindow.postMessage({ type: 'sd-panel-host', sessionId: 'host-session', theme: 'dark', lang: 'zh' }, '*'));
+  await frame.waitForFunction(() => window.SeedanceHost.getState().sessionId === 'host-session');
+  await frame.locator('#btnRefresh').click();
+  await frame.waitForFunction(() => window.SeedanceHost.getState().lang === 'zh');
+  for (let i = 0; i < 50 && readJson(path.join(root, 'panel-ui-state.json'))?.sessionId !== 'host-session'; i++) await page.waitForTimeout(20);
+  assert.equal(readJson(path.join(root, 'panel-ui-state.json')).sessionId, 'host-session');
+  const blocked = await frame.evaluate(async () => { try { await fetch('https://example.invalid/private'); return false; } catch { return true; } });
+  assert.equal(blocked, true);
+  await frame.evaluate(() => window.SeedanceHost.reconnect());
+  assert.equal((await frame.evaluate(() => window.SeedanceHost.call('GET', '/api/seedance/ping'))).ok, true);
+  await host.teardown();
+  const count = host.calls.length;
+  await page.waitForTimeout(3000);
+  assert.equal(host.calls.length, count, 'teardown must not restart polling');
+  assert.equal(await frame.evaluate(() => window.SeedanceHost.getState().isDisposed), true);
+  assert.equal(await frame.evaluate(() => window.SeedanceHost.mediaManager.cache.size), 0);
+  assert.deepEqual(errors, []); assert.deepEqual(host.network, []);
+  const failurePage = await browser.newPage();
+  const failureErrors = []; failurePage.on('pageerror', e => failureErrors.push(e.message));
+  let blockInitialization = true;
+  const failureHost = await mountNativePanel(failurePage, server, { waitForReady: false, beforeCall(params) {
+    if (blockInitialization && params.arguments?.path === '/api/seedance/pending') throw new Error('Fixture pending state unavailable');
+  } });
+  await failureHost.frame.evaluate(() => window.SeedanceHost.ready.then(() => { throw new Error('Initialization unexpectedly succeeded'); }, () => true));
+  assert.equal(failureHost.calls.some(p => p.arguments?.path === '/api/seedance/config'), false);
+  blockInitialization = false;
+  await failureHost.frame.evaluate(() => window.SeedanceHost.reconnect());
+  assert.equal((await failureHost.frame.evaluate(() => window.SeedanceHost.call('GET', '/api/seedance/ping'))).ok, true);
+  await failureHost.teardown();
+  assert.deepEqual(failureErrors, []);
+  console.log(JSON.stringify({ ok: true, checks: ['bounded size', 'host theme/locale/style mapping', 'reject self message', 'parent session persists', 'explicit reconnect', 'no external fetch', 'teardown stops calls and revokes media', 'failed pending read prevents bootstrap; explicit recovery'], errors }, null, 2));
+} finally { await browser.close(); await server.close(); fs.rmSync(root, { recursive: true, force: true }); }

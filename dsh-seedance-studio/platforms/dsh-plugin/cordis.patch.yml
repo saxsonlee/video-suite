@@ -1,0 +1,5 @@
+# dsh-seedance-studio bundle patch
+# 安装到 profile 后由 bundle 机制应用；页面与工具都挂在同一个插件行上。
+- insert:
+    - id: seedance-studio
+      name: 'dsh-seedance-studio'
